@@ -10,6 +10,9 @@ import '@/assets/icon/iconfont.css'
 // 全局组件
 import Dialog from "@/components/Dialog.vue"
 
+// 全局方法
+import Verify from './utils/Verify'
+import Message from './utils/Message'
 const app = createApp(App)
 
 app.component("Dialog",Dialog)
@@ -19,5 +22,7 @@ app.config.globalProperties.VueCookies = VueCookies
 app.config.globalProperties.globalInfo = {
     bodywidth:1280
 }
+app.config.globalProperties.Verify = Verify
+app.config.globalProperties.Message = Message
 
 app.mount('#app')

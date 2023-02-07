@@ -11,16 +11,18 @@
                 :model="formLogin"
                 style="max-width: 400px"
                 ref="formLoginRef"
+                :rules="rules"
+                :hide-required-asterisk="true"
             >
                 <el-form-item label="邮箱" prop="email">
-                    <el-input v-model="formLogin.email">
+                    <el-input maxlength="50" v-model="formLogin.email">
                         <template #prefix>
                             <span class="iconfont icon-account"></span>
                         </template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input v-model="formLogin.password" :type="passwordEyeType.passwordEye?'text':'password'">
+                    <el-input maxlength="20" v-model="formLogin.password" :type="passwordEyeType.passwordEye?'text':'password'">
                         <template #prefix>
                             <span class="iconfont icon-password"></span>
                         </template>
@@ -31,7 +33,7 @@
                 </el-form-item>
                 <div class="checkcode-panel">
                     <el-form-item label="验证码" prop="checkCode">
-                        <el-input v-model="formLogin.checkCode">
+                        <el-input maxlength="5" v-model="formLogin.checkCode">
                             <template #prefix>
                                 <span class="iconfont icon-checkcode"></span>
                             </template>
@@ -58,12 +60,13 @@
             >
             <el-form
                 :label-position="labelPosition"
-                label-width="70px"
+                label-width="78px"
                 :model="formRegister"
                 style="max-width: 400px"
                 ref="formRegisterRef"
+                :rules="rules"
             >
-                <el-form-item label="邮箱" prop="email">
+                <el-form-item maxlength="50" label="邮箱" prop="email">
                     <el-input v-model="formRegister.email">
                         <template #prefix>
                             <span class="iconfont icon-account"></span>
@@ -72,7 +75,7 @@
                 </el-form-item>
                 <div class="checkcode-panel">
                     <el-form-item label="验证码" prop="emailCode">
-                        <el-input v-model="formRegister.emailCode">
+                        <el-input maxlength="5" v-model="formRegister.emailCode">
                             <template #prefix>
                                 <span class="iconfont icon-checkcode"></span>
                             </template>
@@ -83,14 +86,14 @@
                 
                 </div>
                 <el-form-item label="昵称" prop="nickName">
-                    <el-input v-model="formRegister.nickName">
+                    <el-input maxlength="20" v-model="formRegister.nickName">
                         <template #prefix>
                             <span class="iconfont icon-account"></span>
                         </template>
                     </el-input>
                 </el-form-item>
 
-                <el-form-item label="密码" prop="registerPassword">
+                <el-form-item maxlength="20" label="密码" prop="registerPassword">
                     <el-input v-model="formRegister.registerPassword" :type="passwordEyeType.registerPasswordEye?'text':'password'">
                         <template #prefix>
                             <span class="iconfont icon-password"></span>
@@ -100,7 +103,7 @@
                         </template>
                     </el-input>
                 </el-form-item>
-                <el-form-item label="重复密码">
+                <el-form-item maxlength="20" label="重复密码" prop="repeatPassword">
                     <el-input v-model="formRegister.repeatPassword" :type="passwordEyeType.repeatPasswordEye?'text':'password'">
                         <template #prefix>
                             <span class="iconfont icon-password"></span>
@@ -112,8 +115,8 @@
                 </el-form-item>
 
                 <div class="checkcode-panel">
-                    <el-form-item label="验证码">
-                        <el-input v-model="formRegister.checkCode">
+                    <el-form-item label="验证码" prop="checkCode">
+                        <el-input maxlength="5" v-model="formRegister.checkCode">
                             <template #prefix>
                                 <span class="iconfont icon-checkcode"></span>
                             </template>
@@ -134,11 +137,14 @@
 </template>
 
 <script setup>
-import {ref,reactive } from 'vue'
+import {ref,reactive,getCurrentInstance,nextTick } from 'vue'
+
 
 const api = {
     checkCode:"/api/checkCode"
 }
+const {proxy} = getCurrentInstance();
+
 
 const formLoginRef = ref()
 const formLogin = reactive({
@@ -156,39 +162,70 @@ const formRegister = reactive({
   checkCode: '',
 })
 
+// 定义dialog的一些配置项
 const opType = ref()
 const showLogindialog = ref(false)
 const showRegisterdialog = ref(false)
 const title = ref()
 const labelPosition = ref('left')
-
+// 打开dialog
 const showPanel = (type)=>{
     opType.value=type
     if(type==1){
         title.value = "登录"
         showRegisterdialog.value = false
         showLogindialog.value = true
-        // nextTick(()=>{
-        //     formLoginRef.value.resetFields()
-        // })
+        nextTick(()=>{
+            formLoginRef.value.resetFields()
+        })
         
     }else{
         title.value = "注册"
         showLogindialog.value = false
         showRegisterdialog.value = true
+        nextTick(()=>{
+            formRegisterRef.value.resetFields()
+        })
     }
 }
 defineExpose({showPanel})
 
 
-// 验证码
+
+
+
+// 规则校验部分
+
+const verifyreaptPassword = (value,callback)=>{
+    
+}
+
+const rules = {
+    email:[{required:true,message:"请输入邮箱"},
+        {validator:proxy.Verify.email,message:"请输入正确的邮箱"},
+    ],
+    password:[{required:true,message:"请输入密码"},
+        {validator:proxy.Verify.password,message:"请正确输入密码格式"},
+    ],
+    checkCode:[{required:true,message:'请输入验证码'}],
+    emailCode:[{required:true,message:'请输入验证码'}],
+    nickName:[{required:true,message:'昵称不能为空'}],
+    registerPassword:[{required:true,message:"请输入密码"},
+        {validator:proxy.Verify.password,message:"请正确输入密码格式"},
+    ],
+    repeatPassword:[{required:true,message:"请输入密码"},
+        {validator:proxy.Verify.password,message:"请正确输入密码格式"},
+    ],
+}
+
+// 验证码部分
 const checkCodeUrl  =ref(api.checkCode)
 // api文档 登录注册的type为0，发邮件为1，两个验证码还不一样
 const changeCheckCode = (type)=>{
     checkCodeUrl.value = api.checkCode+"?type="+type+"&time="+new Date().getTime()
 }
 
-// 密码显示隐藏操作
+// 密码显示隐藏操作部分
 const passwordEyeType = reactive({
     passwordEye:false,
     registerPasswordEye:false,

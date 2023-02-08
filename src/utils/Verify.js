@@ -10,6 +10,7 @@ const verify = (rule,value,reg,callback) =>{
             callback()
         }else{
             callback(new Error(rule,rule.message))
+            // callback()
         }
     }else{
         callback()

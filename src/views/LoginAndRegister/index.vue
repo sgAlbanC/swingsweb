@@ -15,7 +15,7 @@
                 :hide-required-asterisk="true"
             >
                 <el-form-item label="邮箱" prop="email">
-                    <el-input maxlength="50" v-model="formLogin.email">
+                    <el-input maxlength="30" v-model="formLogin.email">
                         <template #prefix>
                             <span class="iconfont icon-account"></span>
                         </template>
@@ -53,6 +53,8 @@
                 </div>
             </el-form>
         </Dialog>
+
+        <!-- 注册窗口 -->
         <Dialog :show=showRegisterdialog 
             :title=title
             @close="showRegisterdialog=false"
@@ -66,7 +68,7 @@
                 ref="formRegisterRef"
                 :rules="rules"
             >
-                <el-form-item maxlength="50" label="邮箱" prop="email">
+                <el-form-item maxlength="30" label="邮箱" prop="email">
                     <el-input v-model="formRegister.email">
                         <template #prefix>
                             <span class="iconfont icon-account"></span>
@@ -82,7 +84,7 @@
                         </el-input>
                         <p>未收到邮箱验证码？</p>
                     </el-form-item>
-                    <el-button type="primary" class="checkcode" @click="">获取验证码</el-button>
+                    <el-button type="primary" class="checkcode" @click="showPanel(2)">获取验证码</el-button>
                 
                 </div>
                 <el-form-item label="昵称" prop="nickName">
@@ -133,19 +135,52 @@
                 </div>
             </el-form>
         </Dialog>
+
+        <!-- 发送邮件dialog窗口 -->
+        <Dialog :show="showSendEmaildialog"
+            :title=title
+            @close="showSendEmaildialog=false"
+            :showfooter="false"
+            >
+            <el-form
+                :label-position="labelPosition"
+                label-width="70px"
+                :model="formSendEmail"
+                style="max-width: 400px"
+                ref="formSendEmailRef"
+                :rules="rules"
+                >
+                <!-- 这里的prop="email" 貌似没有什么用，就为了拿到一个校验前面的星号样式 -->
+                <el-form-item maxlength="30" label="邮箱" prop="email">
+                    <span>{{ formRegister.email }}</span>
+                </el-form-item>
+                <div class="checkcode-panel">
+                    <el-form-item label="验证码" prop="checkCode">
+                        <el-input maxlength="5" v-model="formSendEmail.checkCode">
+                            <template #prefix>
+                                <span class="iconfont icon-checkcode"></span>
+                            </template>
+                        </el-input>
+                    </el-form-item>
+                    <img :src="checkCodeUrl4SendMailCode" class="checkcode" @click="changeCheckCode(1)"/>
+                </div>
+                <div class="login-btn">
+                    <el-button type="primary" style="width: 100%;" @click="sendEmailCode">发送验证码</el-button>
+                </div>
+            </el-form>
+        </Dialog>
     </div>
 </template>
 
 <script setup>
 import {ref,reactive,getCurrentInstance,nextTick } from 'vue'
-
+const {proxy} = getCurrentInstance();
 
 const api = {
     checkCode:"/api/checkCode"
 }
-const {proxy} = getCurrentInstance();
 
-
+// 表单数据部分
 const formLoginRef = ref()
 const formLogin = reactive({
   email: '',
@@ -161,14 +196,21 @@ const formRegister = reactive({
   repeatPassword:'',
   checkCode: '',
 })
-
+const formSendEmailRef = ref()
+const formSendEmail = reactive({
+    email:'',
+    checkCode:'',
+})
+// 
 // 定义dialog的一些配置项
 const opType = ref()
 const showLogindialog = ref(false)
 const showRegisterdialog = ref(false)
+const showSendEmaildialog = ref(false)
 const title = ref()
 const labelPosition = ref('left')
-// 打开dialog
+
+// 打开dialog部分
 const showPanel = (type)=>{
     opType.value=type
     if(type==1){
@@ -178,51 +220,82 @@ const showPanel = (type)=>{
         nextTick(()=>{
             formLoginRef.value.resetFields()
         })
-        
-    }else{
+
+    }else if(type==0){
         title.value = "注册"
         showLogindialog.value = false
         showRegisterdialog.value = true
         nextTick(()=>{
             formRegisterRef.value.resetFields()
         })
+    }else{
+        formRegisterRef.value.validateField("email",(valid)=>{
+            if(!valid){
+                return;
+            }
+            showSendEmaildialog.value = true
+            nextTick(()=>{
+                changeCheckCode(1)
+                formSendEmailRef.value.resetFields();
+                formSendEmail.email = formRegister.email
+            })
+        })
     }
 }
 defineExpose({showPanel})
 
 
+// 发送邮件方法,这里还得做一次校验
+const sendEmailCode =()=>{
+    formSendEmailRef.value.validate((valid) =>{
+        if(!valid){
+            return;
+        }
+        console.log(formSendEmail.email,formSendEmail.checkCode)
+    });
 
+}
 
 
 // 规则校验部分
-
-const verifyreaptPassword = (value,callback)=>{
-    
+// 重复密码
+const checkRepeatPassword =(rule,value,callback)=> {
+    if(value!=formRegister.registerPassword){
+        callback(new Error(rule.message))
+    }else{
+        callback()
+    }
 }
-
+// 其他规则
 const rules = {
     email:[{required:true,message:"请输入邮箱"},
         {validator:proxy.Verify.email,message:"请输入正确的邮箱"},
     ],
     password:[{required:true,message:"请输入密码"},
-        {validator:proxy.Verify.password,message:"请正确输入密码格式"},
+        {validator:proxy.Verify.password,message:"密码只能有6-16位"},
     ],
     checkCode:[{required:true,message:'请输入验证码'}],
     emailCode:[{required:true,message:'请输入验证码'}],
     nickName:[{required:true,message:'昵称不能为空'}],
     registerPassword:[{required:true,message:"请输入密码"},
-        {validator:proxy.Verify.password,message:"请正确输入密码格式"},
+        {validator:proxy.Verify.password,message:"密码只能有6-16位"},
     ],
     repeatPassword:[{required:true,message:"请输入密码"},
-        {validator:proxy.Verify.password,message:"请正确输入密码格式"},
+        {validator:checkRepeatPassword,message:"两次输入密码不一致"},
     ],
 }
 
 // 验证码部分
 const checkCodeUrl  =ref(api.checkCode)
+const checkCodeUrl4SendMailCode  =ref(api.checkCode)
 // api文档 登录注册的type为0，发邮件为1，两个验证码还不一样
 const changeCheckCode = (type)=>{
-    checkCodeUrl.value = api.checkCode+"?type="+type+"&time="+new Date().getTime()
+    if(type == 0){
+        checkCodeUrl.value = api.checkCode+"?type="+type+"&time="+new Date().getTime()
+    }else{
+        checkCodeUrl4SendMailCode.value = api.checkCode+"?type="+type+"&time="+new Date().getTime()
+    }
+    
 }
 
 // 密码显示隐藏操作部分

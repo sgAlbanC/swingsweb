@@ -1,7 +1,7 @@
 const regs = {
     email: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
     number: /^([0]|[1-9][0-9]*)$/,
-    password: /^(?![0-9]+$)[a-z0-9]{6,16}$/
+    password: /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}/
 }
 
 const verify = (rule,value,reg,callback) =>{

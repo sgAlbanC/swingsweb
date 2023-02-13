@@ -69,7 +69,7 @@
                 :rules="rules"
             >
                 <el-form-item maxlength="30" label="邮箱" prop="email">
-                    <el-input v-model="formRegister.email">
+                    <el-input v-model="formRegister.email" placeholder="390200763@qq.com">
                         <template #prefix>
                             <span class="iconfont icon-account"></span>
                         </template>
@@ -95,8 +95,8 @@
                     </el-input>
                 </el-form-item>
 
-                <el-form-item maxlength="20" label="密码" prop="registerPassword">
-                    <el-input v-model="formRegister.registerPassword" :type="passwordEyeType.registerPasswordEye?'text':'password'">
+                <el-form-item label="密码" prop="registerPassword">
+                    <el-input maxlength="20" v-model="formRegister.registerPassword" :type="passwordEyeType.registerPasswordEye?'text':'password'">
                         <template #prefix>
                             <span class="iconfont icon-password"></span>
                         </template>
@@ -105,8 +105,8 @@
                         </template>
                     </el-input>
                 </el-form-item>
-                <el-form-item maxlength="20" label="重复密码" prop="repeatPassword">
-                    <el-input v-model="formRegister.repeatPassword" :type="passwordEyeType.repeatPasswordEye?'text':'password'">
+                <el-form-item label="重复密码" prop="repeatPassword">
+                    <el-input maxlength="20" v-model="formRegister.repeatPassword" :type="passwordEyeType.repeatPasswordEye?'text':'password'">
                         <template #prefix>
                             <span class="iconfont icon-password"></span>
                         </template>
@@ -131,7 +131,7 @@
                     <a @click="showPanel(1)">已有账号？</a>
                 </div>
                 <div class="login-btn">
-                    <el-button type="primary" style="width: 100%;">注册</el-button>
+                    <el-button type="primary" style="width: 100%;" @click="regist">注册</el-button>
                 </div>
             </el-form>
         </Dialog>
@@ -177,7 +177,11 @@ import {ref,reactive,getCurrentInstance,nextTick } from 'vue'
 const {proxy} = getCurrentInstance();
 
 const api = {
-    checkCode:"/api/checkCode"
+    checkCode:"/api/checkCode",
+    sendEmailCode:'/sendEmailCode',
+    register:'/register',
+    login:'/login',
+    resetPwd:'/resetPwd'
 }
 
 // 表单数据部分
@@ -197,7 +201,7 @@ const formRegister = reactive({
   checkCode: '',
 })
 const formSendEmailRef = ref()
-const formSendEmail = reactive({
+const formSendEmail = reactive({  
     email:'',
     checkCode:'',
 })
@@ -245,17 +249,60 @@ const showPanel = (type)=>{
 defineExpose({showPanel})
 
 
-// 发送邮件方法,这里还得做一次校验
+// 发送邮件方法时,这里还得做一次校验
 const sendEmailCode =()=>{
-    formSendEmailRef.value.validate((valid) =>{
+    formSendEmailRef.value.validate(async (valid) =>{
         if(!valid){
             return;
         }
-        console.log(formSendEmail.email,formSendEmail.checkCode)
+        const params = Object.assign({},formSendEmail)
+        params.type = 0
+        let result = await proxy.Request({
+            url:api.sendEmailCode,
+            params:params,
+            errorCallback:()=>{
+                changeCheckCode(1);
+            }
+        });
+        if(!result){
+            return;
+        }        
+        proxy.Message.success('验证码发送成功，请登录邮箱查看')
+        showSendEmaildialog.value = false
+
     });
 
 }
 
+// 注册逻辑
+const regist = () => {
+    formRegisterRef.value.validate(async (valid)=>{
+        if(!valid){
+            return;
+        }
+        const params = Object.assign({},formRegister)
+        params.password = formRegister.registerPassword
+        delete params.registerPassword
+        delete params.repeatPassword
+        console.log(params)
+        let result = await proxy.Request({
+            url:api.register,
+            params:params,
+            // 如果发生错误，还是要刷新验证码
+            errorCallback:()=>{
+                changeCheckCode(0)
+            }
+        });
+        if(!result){
+            return;
+        }      
+        
+        proxy.Message.success('注册成功')
+        title.value = '登录'
+        showRegisterdialog.value = false
+        showLogindialog.value = true
+    })
+}
 
 // 规则校验部分
 // 重复密码
@@ -278,7 +325,7 @@ const rules = {
     emailCode:[{required:true,message:'请输入验证码'}],
     nickName:[{required:true,message:'昵称不能为空'}],
     registerPassword:[{required:true,message:"请输入密码"},
-        {validator:proxy.Verify.password,message:"密码只能有6-16位"},
+        {validator:proxy.Verify.password,message:"密码只能有6-16位,且必须包含数字和字母"},
     ],
     repeatPassword:[{required:true,message:"请输入密码"},
         {validator:checkRepeatPassword,message:"两次输入密码不一致"},

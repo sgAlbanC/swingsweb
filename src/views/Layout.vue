@@ -3,7 +3,6 @@
         <Header></Header>
    </div>
    <div class="main">
-    123asas
    </div>
    <div class="footer">
    </div>

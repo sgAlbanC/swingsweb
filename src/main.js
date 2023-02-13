@@ -13,6 +13,7 @@ import Dialog from "@/components/Dialog.vue"
 // 全局方法
 import Verify from './utils/Verify'
 import Message from './utils/Message'
+import Request from './utils/Request'
 const app = createApp(App)
 
 app.component("Dialog",Dialog)
@@ -24,5 +25,6 @@ app.config.globalProperties.globalInfo = {
 }
 app.config.globalProperties.Verify = Verify
 app.config.globalProperties.Message = Message
+app.config.globalProperties.Request = Request
 
 app.mount('#app')

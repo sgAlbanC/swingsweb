@@ -22,7 +22,7 @@
                     </el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input maxlength="20" v-model="formLogin.password" :type="passwordEyeType.passwordEye?'text':'password'">
+                    <el-input placeholder="aaaaaaa1" maxlength="20" v-model="formLogin.password" :type="passwordEyeType.passwordEye?'text':'password'">
                         <template #prefix>
                             <span class="iconfont icon-password"></span>
                         </template>
@@ -45,7 +45,7 @@
                     <el-checkbox label="记住密码" name="type" v-model="formLogin.remenberMe"/>
                 </div>
                 <div class="no-account">
-                    <a>忘记密码？</a>
+                    <a @click="showPanel(3)">忘记密码？</a>
                     <a @click="showPanel(0)">注册账号</a>
                 </div>
                 <div class="login-btn">
@@ -135,6 +135,81 @@
                 </div>
             </el-form>
         </Dialog>
+        
+        <!-- 忘记密码/重置密码 跟注册窗口类似 -->
+        <Dialog :show=showResetPwddialog 
+            :title=title
+            @close="showResetPwddialog=false"
+            :showfooter="false"
+            >
+            <el-form
+                :label-position="labelPosition"
+                label-width="78px"
+                :model="formResetPwd"
+                style="max-width: 400px"
+                ref="formResetPwdRef"
+                :rules="rules"
+            >
+                <el-form-item maxlength="30" label="邮箱" prop="email">
+                    <el-input v-model="formResetPwd.email">
+                        <template #prefix>
+                            <span class="iconfont icon-account"></span>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <div class="checkcode-panel">
+                    <el-form-item label="验证码" prop="emailCode">
+                        <el-input maxlength="5" v-model="formResetPwd.emailCode">
+                            <template #prefix>
+                                <span class="iconfont icon-checkcode"></span>
+                            </template>
+                        </el-input>
+                        <p>未收到邮箱验证码？</p>
+                    </el-form-item>
+                    <el-button type="primary" class="checkcode" @click="showPanel(2,1)">获取验证码</el-button>
+                
+                </div>
+
+                <el-form-item label="密码" prop="registerPassword">
+                    <el-input maxlength="20" v-model="formResetPwd.registerPassword" :type="passwordEyeType.registerPasswordEye?'text':'password'">
+                        <template #prefix>
+                            <span class="iconfont icon-password"></span>
+                        </template>
+                        <template #suffix>
+                            <span @click="eyeChange('registerPasswordEye')" :class="['iconfont',passwordEyeType.registerPasswordEye?'icon-eye':'icon-close-eye']" ></span>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item label="重复密码" prop="repeatPassword2">
+                    <el-input maxlength="20" v-model="formResetPwd.repeatPassword2" :type="passwordEyeType.repeatPasswordEye?'text':'password'">
+                        <template #prefix>
+                            <span class="iconfont icon-password"></span>
+                        </template>
+                        <template #suffix>
+                            <span @click="eyeChange('repeatPasswordEye')" :class="['iconfont',passwordEyeType.repeatPasswordEye?'icon-eye':'icon-close-eye']" ></span>
+                        </template>
+                    </el-input>
+                </el-form-item>
+
+                <div class="checkcode-panel">
+                    <el-form-item label="验证码" prop="checkCode">
+                        <el-input maxlength="5" v-model="formResetPwd.checkCode">
+                            <template #prefix>
+                                <span class="iconfont icon-checkcode"></span>
+                            </template>
+                        </el-input>
+                    </el-form-item>
+                    <img :src="checkCodeUrl" class="checkcode" @click="changeCheckCode(0)"/>
+                </div>
+
+                <div class="no-account">
+                    <a @click="showPanel(1)">去登录？</a>
+                </div>
+                <div class="login-btn">
+                    <el-button type="primary" style="width: 100%;" @click="resetPwd">重置密码</el-button>
+                </div>
+            </el-form>
+        </Dialog>
 
         <!-- 发送邮件dialog窗口 -->
         <Dialog :show="showSendEmaildialog"
@@ -152,7 +227,7 @@
                 >
                 <!-- 这里的prop="email" 貌似没有什么用，就为了拿到一个校验前面的星号样式 -->
                 <el-form-item maxlength="30" label="邮箱" prop="email">
-                    <span>{{ formRegister.email }}</span>
+                    <span>{{ formRegister.email != ''?formRegister.email:formResetPwd.email }}</span>
                 </el-form-item>
                 <div class="checkcode-panel">
                     <el-form-item label="验证码" prop="checkCode">
@@ -169,6 +244,8 @@
                 </div>
             </el-form>
         </Dialog>
+
+
     </div>
 </template>
 
@@ -194,32 +271,41 @@ const formLogin = reactive({
 })
 const formRegisterRef= ref()
 const formRegister = reactive({
-  email: '',
-  emailCode:'',
-  registerPassword: '',
-  repeatPassword:'',
-  checkCode: '',
+    email: '',
+    emailCode:'',
+    nickName:'',
+    registerPassword: '',
+    repeatPassword:'',
+    checkCode: '',
 })
 const formSendEmailRef = ref()
 const formSendEmail = reactive({  
     email:'',
     checkCode:'',
 })
+const formResetPwdRef = ref()
+const formResetPwd = reactive({
+    email:'',
+    emailCode:'',
+    registerPassword: '',
+    repeatPassword2:'',
+    checkCode: '',
+})
 // 
 // 定义dialog的一些配置项
-const opType = ref()
 const showLogindialog = ref(false)
 const showRegisterdialog = ref(false)
 const showSendEmaildialog = ref(false)
+const showResetPwddialog = ref(false)
 const title = ref()
 const labelPosition = ref('left')
 
-// 打开dialog部分
-const showPanel = (type)=>{
-    opType.value=type
+// 打开各个dialog部分
+const showPanel = (type,anotherType)=>{
     if(type==1){
         title.value = "登录"
         showRegisterdialog.value = false
+        showResetPwddialog.value = false
         showLogindialog.value = true
         nextTick(()=>{
             formLoginRef.value.resetFields()
@@ -232,17 +318,40 @@ const showPanel = (type)=>{
         nextTick(()=>{
             formRegisterRef.value.resetFields()
         })
-    }else{
-        formRegisterRef.value.validateField("email",(valid)=>{
-            if(!valid){
-                return;
-            }
-            showSendEmaildialog.value = true
-            nextTick(()=>{
-                changeCheckCode(1)
-                formSendEmailRef.value.resetFields();
-                formSendEmail.email = formRegister.email
+    }else if(type==2){
+        if(anotherType==1){
+            formResetPwdRef.value.validateField("email",(valid)=>{
+                if(!valid){
+                    return;
+                }
+                showSendEmaildialog.value = true
+                formRegister.email = ''
+                nextTick(()=>{
+                    changeCheckCode(1)
+                    formSendEmailRef.value.resetFields();
+                    formSendEmail.email = formResetPwd.email
+                })
             })
+        }
+        else{
+            formRegisterRef.value.validateField("email",(valid)=>{
+                if(!valid){
+                    return;
+                }
+                showSendEmaildialog.value = true
+                nextTick(()=>{
+                    changeCheckCode(1)
+                    formSendEmailRef.value.resetFields();
+                    formSendEmail.email = formRegister.email
+                })
+            })
+        }
+    }else{
+        showLogindialog.value = false
+        showResetPwddialog.value = true
+        title.value = "重置密码"
+        nextTick(()=>{
+            formResetPwdRef.value.resetFields()
         })
     }
 }
@@ -256,7 +365,10 @@ const sendEmailCode =()=>{
             return;
         }
         const params = Object.assign({},formSendEmail)
-        params.type = 0
+
+        // 0 是注册，1是找回密码
+        params.type = formRegister.email != ''?0:1
+
         let result = await proxy.Request({
             url:api.sendEmailCode,
             params:params,
@@ -303,11 +415,50 @@ const regist = () => {
         showLogindialog.value = true
     })
 }
+// 重置密码逻辑
+const resetPwd = () => {
+    formResetPwdRef.value.validate(async (valid)=>{
+        if(!valid){
+            return;
+        }
+        const params = Object.assign({},formResetPwd)
+        params.password = formResetPwd.registerPassword
+        delete params.registerPassword
+        delete params.repeatPassword2
+        console.log(params)
+        let result = await proxy.Request({
+            url:api.resetPwd,
+            params:params,
+            // 如果发生错误，还是要刷新验证码
+            errorCallback:()=>{
+                changeCheckCode(0)
+            }
+        });
+        if(!result){
+            return;
+        }      
+        
+        proxy.Message.success('重置密码成功，请登录')
+        title.value = '登录'
+        showResetPwddialog.value = false
+        showLogindialog.value = true
+    })
+}
+
+
 
 // 规则校验部分
-// 重复密码
+// 重复密码 注册时
 const checkRepeatPassword =(rule,value,callback)=> {
     if(value!=formRegister.registerPassword){
+        callback(new Error(rule.message))
+    }else{
+        callback()
+    }
+}
+// 重复密码 找回密码时
+const checkRepeatPassword2 =(rule,value,callback)=> {
+    if(value!=formResetPwd.registerPassword){
         callback(new Error(rule.message))
     }else{
         callback()
@@ -329,6 +480,9 @@ const rules = {
     ],
     repeatPassword:[{required:true,message:"请输入密码"},
         {validator:checkRepeatPassword,message:"两次输入密码不一致"},
+    ],
+    repeatPassword2:[{required:true,message:"请输入密码"},
+        {validator:checkRepeatPassword2,message:"两次输入密码不一致"},
     ],
 }
 

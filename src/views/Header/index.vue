@@ -13,10 +13,32 @@
                 搜索
                 <span class="iconfont icon-search "></span>
             </el-button>
-            <el-button-group>
+            <!-- 显示用户信息 -->
+            <div class="message-info">
+                <el-dropdown>
+                    <el-badge :value="99" class="item">
+                        <div class="iconfont icon-message"></div>
+                    </el-badge>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item>回复我的</el-dropdown-item>
+                            <el-dropdown-item>赞了我的文章</el-dropdown-item>
+                            <el-dropdown-item>下载了我的附件</el-dropdown-item>
+                            <el-dropdown-item>赞了我的评论</el-dropdown-item>
+                            <el-dropdown-item>系统消息</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
+            <div class="user-info">
+                <Avatar userId="18905249956"></Avatar>
+            </div>
+            
+
+            <!-- <el-button-group>
                 <el-button type="info" plain @click="loginAndRegister(1)">登陆</el-button>
                 <el-button type="info" plain @click="loginAndRegister(0)">注册</el-button>
-            </el-button-group>
+            </el-button-group> -->
         </div>
 
         <LoginAndRegister ref="loginRegisterRef"></LoginAndRegister>
@@ -35,6 +57,10 @@ const loginRegisterRef = ref()
 const loginAndRegister = (type)=>{
     loginRegisterRef.value.showPanel(type)
 }
+
+
+
+// logo的设置
 const logoInfo = ref([
     {
         letter:'S',
@@ -76,10 +102,23 @@ const logoInfo = ref([
         flex: 1;
     }
     .userinfo-panel{
+        width: 300px;
+        display: flex;
+        align-items: center;
         .el-button:nth-child(2){
             margin-left: 5px;        
             span{
                 margin-left: 3px;
+            }
+        }
+        .message-info{
+            margin-top: 5px;
+            margin-left: 15px;
+            margin-right: 25px;
+            cursor: pointer;
+            .icon-message {
+                font-size: 22px;
+                color: rgb(147, 147, 147);
             }
         }
         .el-button-group{

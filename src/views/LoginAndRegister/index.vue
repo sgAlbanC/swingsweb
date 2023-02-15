@@ -49,7 +49,7 @@
                     <a @click="showPanel(0)">注册账号</a>
                 </div>
                 <div class="login-btn">
-                    <el-button type="primary" style="width: 100%;">确定</el-button>
+                    <el-button type="primary" style="width: 100%;" @click=login>确定</el-button>
                 </div>
             </el-form>
         </Dialog>
@@ -251,6 +251,7 @@
 
 <script setup>
 import {ref,reactive,getCurrentInstance,nextTick } from 'vue'
+import md5 from 'js-md5'
 const {proxy} = getCurrentInstance();
 
 const api = {
@@ -307,8 +308,19 @@ const showPanel = (type,anotherType)=>{
         showRegisterdialog.value = false
         showResetPwddialog.value = false
         showLogindialog.value = true
+
+        // nextTick相当于 每一次打开这个dialog(执行这个地方)的时候，在其之前就会执行一次nextTick
         nextTick(()=>{
+            // 打开登录窗口之前，会刷新验证码，会重置表单；这里是重置的表单，但变量应该还是有值;
             formLoginRef.value.resetFields()
+            changeCheckCode(0)
+            
+            // 会检查cookies里面是否有我们存储的loginInfo对象，如果有，则将邮箱 密码复制到表单输入框中
+            const cookieLoginInfo = proxy.VueCookies.get("loginInfo");
+            if(cookieLoginInfo){
+                formLogin.email = cookieLoginInfo.email
+                formLogin.password = cookieLoginInfo.password
+            }
         })
 
     }else if(type==0){
@@ -317,6 +329,7 @@ const showPanel = (type,anotherType)=>{
         showRegisterdialog.value = true
         nextTick(()=>{
             formRegisterRef.value.resetFields()
+            changeCheckCode(0)
         })
     }else if(type==2){
         if(anotherType==1){
@@ -352,9 +365,12 @@ const showPanel = (type,anotherType)=>{
         title.value = "重置密码"
         nextTick(()=>{
             formResetPwdRef.value.resetFields()
+            changeCheckCode(0)
         })
     }
 }
+// 这里暴露出这个方法给父组件。父组件的登录注册按钮，type 传0或者1
+// btw anotherType是用来区分发送邮件框 是注册点出来的，还是重置密码点出来的。
 defineExpose({showPanel})
 
 
@@ -396,7 +412,6 @@ const regist = () => {
         params.password = formRegister.registerPassword
         delete params.registerPassword
         delete params.repeatPassword
-        console.log(params)
         let result = await proxy.Request({
             url:api.register,
             params:params,
@@ -425,7 +440,6 @@ const resetPwd = () => {
         params.password = formResetPwd.registerPassword
         delete params.registerPassword
         delete params.repeatPassword2
-        console.log(params)
         let result = await proxy.Request({
             url:api.resetPwd,
             params:params,
@@ -437,7 +451,6 @@ const resetPwd = () => {
         if(!result){
             return;
         }      
-        
         proxy.Message.success('重置密码成功，请登录')
         title.value = '登录'
         showResetPwddialog.value = false
@@ -445,8 +458,54 @@ const resetPwd = () => {
     })
 }
 
-
-
+// 登录逻辑
+const login = () => {
+ 
+    formLoginRef.value.validate(async (valid)=>{
+        // 如果表单的东西进行校验，返回的是false，那么就是验证失败，直接return
+        if(!valid){
+            return;
+        }
+        // 将表单中输入的值复制给params
+        const params = Object.assign({},formLogin)
+        // 如果有缓存的账号密码获取到
+        let cookieLoginInfo = proxy.VueCookies.get("loginInfo");
+        let cookiePassword = cookieLoginInfo==null?null:cookieLoginInfo.password
+        // 如果我们是自己手动输入的密码，那么就要进行md转换。cookie里面的password肯定是md5过后了的
+        if(params.password !== cookiePassword){
+            params.password = md5(params.password)
+        }
+        // 如果选择记住密码（一个电脑貌似只能缓存一个）
+        if(params.remenberMe){
+            // 创建一个对象，接收要缓存的三个东西
+            const loginInfo = {
+                email:params.email,
+                password:params.password,
+                remenberMe:params.remenberMe
+            }
+            // 保存到cookies里面，,待到下一次打开dialog时，会从这里面获取
+            proxy.VueCookies.set("loginInfo",loginInfo,"7d")
+        }else{
+            // 如果没有记住密码，那么就删除这个对象
+            proxy.VueCookies.remove("loginInfo")
+        }
+        // 发起登录请求，参数是 api地址+参数params
+        let result = await proxy.Request({
+            url:api.login,
+            params:params,
+            // 如果发生错误，刷新验证码，并报错提示
+            errorCallback: () => {
+                changeCheckCode(0);
+            },
+        });
+        if (!result) {
+            return;
+        }
+        // 登录成功过后，关闭登录dialog，并提示 登录成功。
+        showLogindialog.value = false
+        proxy.Message.success("登录成功")
+    })
+}
 // 规则校验部分
 // 重复密码 注册时
 const checkRepeatPassword =(rule,value,callback)=> {

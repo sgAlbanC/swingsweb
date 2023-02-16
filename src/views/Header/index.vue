@@ -14,31 +14,41 @@
                 <span class="iconfont icon-search "></span>
             </el-button>
             <!-- 显示用户信息 -->
-            <div class="message-info">
-                <el-dropdown>
-                    <el-badge :value="99" class="item">
-                        <div class="iconfont icon-message"></div>
-                    </el-badge>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item>回复我的</el-dropdown-item>
-                            <el-dropdown-item>赞了我的文章</el-dropdown-item>
-                            <el-dropdown-item>下载了我的附件</el-dropdown-item>
-                            <el-dropdown-item>赞了我的评论</el-dropdown-item>
-                            <el-dropdown-item>系统消息</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
-            </div>
-            <div class="user-info">
-                <Avatar userId="18905249956"></Avatar>
-            </div>
-            
-
-            <!-- <el-button-group>
+            <template v-if="userInfo.userId">
+                <div class="message-info">
+                    <el-dropdown>
+                        <el-badge :value="99" class="item">
+                            <div class="iconfont icon-message"></div>
+                        </el-badge>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item>回复我的</el-dropdown-item>
+                                <el-dropdown-item>赞了我的文章</el-dropdown-item>
+                                <el-dropdown-item>下载了我的附件</el-dropdown-item>
+                                <el-dropdown-item>赞了我的评论</el-dropdown-item>
+                                <el-dropdown-item>系统消息</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </div>
+                <div class="user-info">
+                    <el-dropdown>
+                    <Avatar :userId="userInfo.userId"></Avatar>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item>我的主页</el-dropdown-item>
+                                <el-dropdown-item>退出</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                    
+                </div>
+            </template>
+            <!-- 显示登录注册按钮 -->
+            <el-button-group v-else>
                 <el-button type="info" plain @click="loginAndRegister(1)">登陆</el-button>
                 <el-button type="info" plain @click="loginAndRegister(0)">注册</el-button>
-            </el-button-group> -->
+            </el-button-group>
         </div>
 
         <LoginAndRegister ref="loginRegisterRef"></LoginAndRegister>
@@ -49,15 +59,50 @@
 <script setup>
 
 import LoginAndRegister from '@/views/LoginAndRegister/index.vue'
-import { ref,getCurrentInstance } from 'vue'
+import { ref,getCurrentInstance, onMounted , watch} from 'vue'
+import {useStore} from 'vuex'
 
 const {proxy} = getCurrentInstance();
+const store = useStore()
+const api = {
+    getUserInfo:'/getUserInfo/'
+}
 
+// 登录注册，展示Dialog
 const loginRegisterRef = ref()
 const loginAndRegister = (type)=>{
     loginRegisterRef.value.showPanel(type)
+};
+
+onMounted(()=>{
+    getUserInfo();
+})
+
+// 获取用户信息
+const getUserInfo = async () =>{
+    let result = await proxy.Request({
+        url:api.getUserInfo,
+    })
+    if(!result){
+        return;
+    }
+    store.commit("updateLoginUserInfo",result.data)
 }
 
+
+// 监听 登录用户信息
+const userInfo = ref({})
+watch(
+    () => store.state.loginUserInfo,
+    (newVal,oldVal)=>{
+        if(newVal !=undefined &&newVal != null){
+            userInfo.value = newVal
+        }else{
+            userInfo.value = {}
+        }
+    },
+    {immediate:true,deep:true}
+)
 
 
 // logo的设置
@@ -120,6 +165,9 @@ const logoInfo = ref([
                 font-size: 22px;
                 color: rgb(147, 147, 147);
             }
+        }
+        .user-info{
+            cursor: pointer;
         }
         .el-button-group{
             margin-left: 10px;

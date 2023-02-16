@@ -252,8 +252,10 @@
 <script setup>
 import {ref,reactive,getCurrentInstance,nextTick } from 'vue'
 import md5 from 'js-md5'
+import {useStore} from 'vuex'
 const {proxy} = getCurrentInstance();
 
+const store = useStore()
 const api = {
     checkCode:"/api/checkCode",
     sendEmailCode:'/sendEmailCode',
@@ -502,6 +504,7 @@ const login = () => {
             return;
         }
         // 登录成功过后，关闭登录dialog，并提示 登录成功。
+        store.commit("updateLoginUserInfo",result.data)
         showLogindialog.value = false
         proxy.Message.success("登录成功")
     })

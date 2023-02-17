@@ -3,7 +3,26 @@
         <router-link to="/" class="logo">
             <span v-for="item in logoInfo" :style="{color:item.color}">{{ item.letter }}</span>
         </router-link>
-        <div class="menu-panel"></div>
+        <div class="menu-panel">
+            <span class="menu-item">全部</span>
+            <template v-for="item in boardList">
+                <el-popover palcement="bottom-start"
+                    :width=200
+                    trigger="hover"
+                    v-if="item.children.length>0"
+                >
+                    <template #reference>
+                        <span class="menu-item">{{ item.boardName }}</span>
+                    </template>
+                    <div class="sub-board-list">
+                        <span class="sub-board" v-for="subBoard in item.children">
+                        {{ subBoard.boardName }}</span>
+                    </div>
+                </el-popover>
+                <span class="menu-item" v-else>{{ item.boardName }}</span>
+            </template>
+
+        </div>
         <div class="userinfo-panel">
             <el-button type="primary">
                 发帖 
@@ -37,7 +56,7 @@
                         <template #dropdown>
                             <el-dropdown-menu>
                                 <el-dropdown-item>我的主页</el-dropdown-item>
-                                <el-dropdown-item>退出</el-dropdown-item>
+                                <el-dropdown-item @click="logout">退出</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
@@ -59,13 +78,17 @@
 <script setup>
 
 import LoginAndRegister from '@/views/LoginAndRegister/index.vue'
+import { trigger } from '@vue/reactivity';
 import { ref,getCurrentInstance, onMounted , watch} from 'vue'
 import {useStore} from 'vuex'
 
 const {proxy} = getCurrentInstance();
 const store = useStore()
 const api = {
-    getUserInfo:'/getUserInfo/'
+    getUserInfo:'/getUserInfo/',
+    loadBoard:'/board/loadBoard/',
+    logout: "/logout",
+
 }
 
 // 登录注册，展示Dialog
@@ -76,9 +99,38 @@ const loginAndRegister = (type)=>{
 
 onMounted(()=>{
     getUserInfo();
+    loadBoard();
 })
 
+// 获取板块信息
+
+const boardList = ref([]);
+const loadBoard = async ()=>{
+    let result = await proxy.Request({
+        url:api.loadBoard
+    })
+    if(!result){
+        return;
+    }
+    boardList.value = result.data
+}
+
+
+//退出
+const logout = async () => {
+    let result = await proxy.Request({
+      url: api.logout,
+    });
+    if (!result) {
+      return;
+    }
+    store.commit("updateLoginUserInfo", null);
+};
+
+
+
 // 获取用户信息
+// 这里获取的东西不需要穿参，是服务器保存在session的东西
 const getUserInfo = async () =>{
     let result = await proxy.Request({
         url:api.getUserInfo,
@@ -89,21 +141,33 @@ const getUserInfo = async () =>{
     store.commit("updateLoginUserInfo",result.data)
 }
 
-
 // 监听 登录用户信息
 const userInfo = ref({})
 watch(
     () => store.state.loginUserInfo,
+    // 这里在状态管理器中定义的变量loginUserInfo的oldVal是为null的，session里面保存的有我们用户的信息
+    // 前端看不到，后端保存得有，半个小时session会超时。这样比如说明天登录，界面会跳到登录注册按钮。
+    // 返回901就是登录超时。
     (newVal,oldVal)=>{
         if(newVal !=undefined &&newVal != null){
-            userInfo.value = newVal
+            userInfo.value = newVal      
         }else{
             userInfo.value = {}
         }
     },
     {immediate:true,deep:true}
 )
+// 监听是否展示登录框
+watch(
+    // 这里是获取到showLogin，如果有值（请求超时返回901的时候会赋值），也会弹出登录框
+    () => store.state.showLogin,
+    (newVal,oldVal)=>{
+        if(newVal){
+            showPanel(1);
+        }
+    }
 
+)
 
 // logo的设置
 const logoInfo = ref([
@@ -143,8 +207,21 @@ const logoInfo = ref([
     display: flex;
     align-items: center;
     font-size: 30px;
+    .logo{
+        margin-right: 10px;
+    }
     .menu-panel{
         flex: 1;
+        font-size: 16px;
+        
+        .menu-item{
+            margin-left: 10px;
+            color: rgb(102, 172, 209);
+            cursor: pointer;
+        }
+        .menu-item:hover{
+            color: rgb(18, 149, 218);
+        }
     }
     .userinfo-panel{
         width: 300px;
@@ -176,5 +253,19 @@ const logoInfo = ref([
             }
         }
     }
+}
+.sub-board-list{
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    .sub-board{
+        color: rgb(102, 172, 209);
+        margin-right: 10px;
+        margin-top: 10px;
+        padding: 2px 12px;
+        border-radius: 50px;
+        background-color: aliceblue;
+    }
+    
 }
 </style>

@@ -2,6 +2,8 @@ import axios  from "axios";
 import Message from "./Message";
 import { ElLoading } from "element-plus";
 import router from '@/router'
+import store from "@/store";
+
 
 const contentTypeForm = 'application/x-www-form-urlencoded;charset=UTF-8'
 const contentTypeJson = 'application/json'
@@ -43,9 +45,9 @@ instance.interceptors.response.use(
             return responseData;
         } else if (responseData.code == 901) {
             //登录超时
-            setTimeout(() => {
-                router.push("/login")
-            }, 2000);
+            //超时的时候，会更新状态，当我们发请求得到901的时候，才会去弹出登录框，设置用户信息为null
+            store.commit("showLogin",true)
+            store.commit("updateLoginUserInfo",null)
             return Promise.reject({ showError: true, msg: "登录超时" });
         } else {
             //其他错误

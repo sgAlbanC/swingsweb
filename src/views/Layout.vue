@@ -3,6 +3,7 @@
         <Header></Header>
    </div>
    <div class="main">
+        <router-view />
    </div>
    <div class="footer">
    </div>
@@ -51,7 +52,7 @@ onMounted(
     background-color: #fff;
 }
 .main{
+    // position: relative;
     padding-top: 60px;
-    height: 1000px;
 }
 </style>

@@ -504,7 +504,7 @@ const login = () => {
             return;
         }
         // 登录成功过后，关闭登录dialog，并提示 登录成功。
-        store.commit("updateLoginUserInfo",result.data)
+        store.commit("updateLoginUserInfo",result.data)  // 这句代码有必要吗？
         showLogindialog.value = false
         proxy.Message.success("登录成功")
     })

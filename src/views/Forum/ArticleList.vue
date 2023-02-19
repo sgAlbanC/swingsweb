@@ -8,13 +8,18 @@
         <div>最新</div>
     </div>
     <div class="article-list">
-        <div v-for="item in articleInfo.list">{{ item.title }}</div>
+        <DataList :dataSource="articleListInfo" @loadData="loadArticle">
+            <template #default="{ data }">
+                <ArticleListItem :data="data"></ArticleListItem>
+            </template>
+        </DataList>
     </div>
    </div>
 </template>
 
 <script setup>
 import { getCurrentInstance,ref,watch,reactive, onMounted } from 'vue';
+import ArticleListItem from './ArticleListItem.vue';
 const {proxy} = getCurrentInstance()
 
 const api = {
@@ -25,15 +30,22 @@ onMounted(()=>{
     loadArticle()
 })
 
-const articleInfo = ref({})
+const articleListInfo = ref({})
 const loadArticle = async () =>{
+
+    let params = {
+        pageNo:articleListInfo.value.pageNo,   // 传一个页码过来，不同的页码所获取的信息不一样。
+        boardId:0
+    }
+
     let result = await proxy.Request({
         url:api.loadArticle,
+        params:params
     })
     if(!result){
         return;
     }
-    articleInfo.value = result.data
+    articleListInfo.value = result.data
 }
 
 
@@ -44,6 +56,7 @@ const loadArticle = async () =>{
 <style scoped lang="less">
 .container{
     margin: 0 auto;
+    padding: 5px 0;
     background-color: #fff;
     .top-tab{
         margin-top:10px ;
@@ -55,7 +68,7 @@ const loadArticle = async () =>{
         border-bottom: 1px solid #ddd;
     }
     .article-list{
-        padding: 10px;
+        
     }
 }
 </style>

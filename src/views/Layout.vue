@@ -50,6 +50,7 @@ onMounted(
     box-shadow: 0 2px 6px 0 #ddd;
     position: fixed;
     background-color: #fff;
+    z-index:100;
 }
 .main{
     // position: relative;

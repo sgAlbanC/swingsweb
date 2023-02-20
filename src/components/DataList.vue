@@ -1,5 +1,12 @@
 <template>
-   <div v-for="item in dataSource.list" class="">
+  <div v-if="!loading&&dataSource.list!=null&&dataSource.list.length==0">
+    <NoData :msg="noDataMsg"></NoData>
+  </div>
+  <div class="skeleton" v-if="loading">
+    <el-skeleton :row="2" animated></el-skeleton>
+  </div>
+  
+   <div v-for="item in dataSource.list" class="" v-else>
     <!-- 为什么是插槽？这个插槽代表其他组件使用这个组件的时候，中间可以使用template去添加东西 -->
         <slot :data="item"></slot> 
    </div>
@@ -21,6 +28,14 @@
 const props = defineProps({
     dataSource:{
         type:Object
+    },
+    loading:{
+      type:Boolean,
+      default:false  // 默认没有正在加载
+    },
+    noDataMsg:{
+      type:String,
+      default:"空空如也"
     }
 })
 
@@ -38,5 +53,8 @@ const handlePageNoChange = (pageNo)=>{
 .pagination{
   margin-left: 15px;
   margin-bottom: 10px;
+}
+.skeleton{
+  padding: 15px;
 }
 </style>

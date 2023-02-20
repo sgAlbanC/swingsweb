@@ -4,7 +4,7 @@
             <span v-for="item in logoInfo" :style="{color:item.color}">{{ item.letter }}</span>
         </router-link>
         <div class="menu-panel">
-            <span class="menu-item">全部</span>
+            <router-link :class="['menu-item',activePboardId == undefined ? 'active':'']" to="/">首页</router-link>
             <template v-for="item in boardList">
                 <el-popover palcement="bottom-start"
                     :width=200
@@ -12,14 +12,14 @@
                     v-if="item.children.length>0"
                 >
                     <template #reference>
-                        <span class="menu-item">{{ item.boardName }}</span>
+                        <span :class="['menu-item',item.boardId == activePboardId ? 'active' : '']" @click="boardClickHandler(item)">{{ item.boardName }}</span>
                     </template>
-                    <div class="sub-board-list">
-                        <span class="sub-board" v-for="subBoard in item.children">
+                    <div class="sub-board-list" >
+                        <span :class="['sub-board',subBoard.boardId==activeBoardId?'active':'']" v-for="subBoard in item.children" @click="subBoardClickHandler(subBoard)">
                         {{ subBoard.boardName }}</span>
                     </div>
                 </el-popover>
-                <span class="menu-item" v-else>{{ item.boardName }}</span>
+                <span  :class="['menu-item',item.boardId == activePboardId ? 'active' : '']"  v-else @click="boardClickHandler(item)">{{ item.boardName }}</span>
             </template>
 
         </div>
@@ -78,10 +78,12 @@
 <script setup>
 
 import LoginAndRegister from '@/views/LoginAndRegister/index.vue'
-import { trigger } from '@vue/reactivity';
 import { ref,getCurrentInstance, onMounted , watch} from 'vue'
+import { useRouter,useRoute } from 'vue-router';
 import {useStore} from 'vuex'
 
+const router = useRouter()
+const route = useRoute()
 const {proxy} = getCurrentInstance();
 const store = useStore()
 const api = {
@@ -103,7 +105,6 @@ onMounted(()=>{
 })
 
 // 获取板块信息
-
 const boardList = ref([]);
 const loadBoard = async ()=>{
     let result = await proxy.Request({
@@ -113,6 +114,7 @@ const loadBoard = async ()=>{
         return;
     }
     boardList.value = result.data
+    store.commit('saveBoardList',result.data)
 }
 
 
@@ -169,6 +171,37 @@ watch(
 
 )
 
+//板块点击
+const boardClickHandler = (board) => {
+  router.push(`/forum/${board.boardId}`);
+};
+
+//二级板块
+const subBoardClickHandler = (subBoard) => {
+  router.push(`/forum/${subBoard.pBoardId}/${subBoard.boardId}`);
+};
+
+// 当前选中的一级板块
+const activePboardId = ref(0);
+watch(()=>store.state.activePboardId,
+    (newVal,oldVal)=>{
+        if(newVal!=0){
+             activePboardId.value = newVal
+        } 
+    },
+    {immediate:true,deep:true}
+)
+// 当前选中的二级板块
+const activeBoardId = ref(0);
+watch(()=>store.state.activeBoardId,
+    (newVal,oldVal)=>{
+        if(newVal!=undefined){
+             activeBoardId.value = newVal
+        } 
+    },
+    {immediate:true,deep:true}
+)
+
 // logo的设置
 const logoInfo = ref([
     {
@@ -222,6 +255,9 @@ const logoInfo = ref([
         .menu-item:hover{
             color: rgb(18, 149, 218);
         }
+        .active{
+            color:rgb(18, 149, 218);
+        }
     }
     .userinfo-panel{
         width: 300px;
@@ -265,6 +301,10 @@ const logoInfo = ref([
         padding: 2px 12px;
         border-radius: 50px;
         background-color: aliceblue;
+    }
+    .active{
+        background-color:rgb(18, 149, 218);
+        color: #fff;
     }
     
 }

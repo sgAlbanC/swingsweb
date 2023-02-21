@@ -2,7 +2,7 @@
    <div class="container" :style="{width:proxy.globalInfo.bodywidth + 'px'}">
     <!-- 二级板块展示信息    -->
     <div class="sub-board" v-if="pBoardId">
-        <span v-for="item in subBoardList" :class="['board-item']">
+        <span v-for="item in subBoardList" :class="['board-item',item.boardId == boardId ? 'active':'']">
             <router-link :to="`/forum/${item.pBoardId}/${item.boardId}`"> {{ item.boardName }}</router-link>
         </span>
     </div>
@@ -42,12 +42,6 @@ const changeOrderType = (type)=>{
     orderType.value = type;
     loadArticle()
 }
-
-
-onMounted(()=>{
-    loadArticle()
-})
-
 
 // 文章列表
 // 一级板块
@@ -131,10 +125,14 @@ watch(
             margin: 10px 10px 10px 0;
             cursor: pointer;
             font-size: 14px;
-            padding: 5px 10px;
+            
             background-color: #fff;
             border-radius: 15px;
             color: #909090;
+        }
+        a{
+            display: block;
+            padding: 5px 10px;
         }
         .board-item:hover{
             background-color :rgb(18, 149, 218);

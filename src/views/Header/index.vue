@@ -195,9 +195,8 @@ watch(()=>store.state.activePboardId,
 const activeBoardId = ref(0);
 watch(()=>store.state.activeBoardId,
     (newVal,oldVal)=>{
-        if(newVal!=undefined){
-             activeBoardId.value = newVal
-        } 
+        activeBoardId.value = newVal
+
     },
     {immediate:true,deep:true}
 )
@@ -249,7 +248,7 @@ const logoInfo = ref([
         
         .menu-item{
             margin-left: 10px;
-            color: rgb(102, 172, 209);
+            color: #1b1b1b;
             cursor: pointer;
         }
         .menu-item:hover{

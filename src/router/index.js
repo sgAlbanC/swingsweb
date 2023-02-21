@@ -19,7 +19,11 @@ const router = createRouter({
             },{
                 path:'/forum/:pBoardId/:boardId/',
                 name:'二级板块',
-                component:()=>import('@/views/forum/ArticleList.vue')
+                component:()=>import('@/views/Forum/ArticleList.vue')
+            },{
+                path:'/post/:articleId',
+                name:'文章详情',
+                component:()=>import('@/views/Forum/ArticleDetail.vue')
             },{
                 path:'/user/:userId',
                 name:'用户信息',

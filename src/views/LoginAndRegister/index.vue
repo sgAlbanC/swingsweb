@@ -2,7 +2,7 @@
    <div class="">
         <Dialog :show=showLogindialog 
             :title=title
-            @close="showLogindialog=false"
+            @close="closeDialog"
             :showfooter="false"
             >
             <el-form
@@ -375,6 +375,12 @@ const showPanel = (type,anotherType)=>{
 // btw anotherType是用来区分发送邮件框 是注册点出来的，还是重置密码点出来的。
 defineExpose({showPanel})
 
+// 点击关闭登录窗口，说明肯定是没有登录的，清除一下store里面的用户信息
+const closeDialog=()=>{
+    showLogindialog.value=false
+    store.commit("showLogin",false)
+    
+}
 
 // 发送邮件方法时,这里还得做一次校验
 const sendEmailCode =()=>{

@@ -32,13 +32,13 @@
 
                 <!-- 是否有附件，附件渲染 -->
                 <div class="attachment-panel" v-if="attachment" id="view-attachment">
+                    <div class="title">附件</div>
                     <div class="attachment-info">
-                        <div class="title item">附件</div>
                         <div class="iconfont icon-zip item"></div>
                         <div class="file-name item">{{ attachment.fileName }}</div>
-                        <div class="size item">{{ attachment.fileSize }}</div>
-                        <div class="item">需要 <span class="integral">{{ attachment.integral }}</span></div>
-                        <div class="download-count item">已下载{{ attachment.integral }}</div>
+                        <div class="size item">{{ proxy.Utils.sizeToStr(attachment.fileSize) }}</div>
+                        <div class="item">需要 <span class="integral">{{ attachment.integral }}</span> 积分</div>
+                        <div class="download-count item">已下载 {{ attachment.integral }}</div>
                         <div class="download-btn item">
                             <el-button type="primary" size="small">下载</el-button>
                         </div>
@@ -46,8 +46,32 @@
                 </div>
             </div>
 
-            <div class="detail-comment">
+            <div class="detail-comment" id="view-comment">
                 评论
+            </div>
+        </div>
+        <div class="quick-panel" :style="{left:quickPanelLeft + 'px'}">
+
+            <!-- 点赞 -->
+            <el-badge :value="articleInfo.goodCount"
+                type="info"
+                :hidden="!articleInfo.goodCount>0"
+                class="quick-item"
+                @click="doLikeHandler">
+                <span class="iconfont icon-good" :class="[haveLike?'have-like':'']"></span>
+            </el-badge>
+
+            <!-- 评论 -->
+            <el-badge :value="articleInfo.goodCount"
+                type="info"
+                :hidden="!articleInfo.goodCount>0"
+                class="quick-item"
+                @click="goToPosition('view-comment')">
+                <span class="iconfont icon-comment"></span>
+            </el-badge>
+            <!-- 附件 -->
+            <div class="quick-item" @click="goToPosition('view-attachment')">
+                <span class="iconfont icon-attachment"></span>
             </div>
         </div>
         <div class="aside">
@@ -60,13 +84,16 @@
 import { getCurrentInstance ,onMounted,ref ,watch} from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex'
 const {proxy} = getCurrentInstance()
 const route = useRoute()
 const router = useRouter()
+const store = useStore()
 
 
 const api = {
-    getArticleDetatil : "/forum/getArticleDetail"
+    getArticleDetatil : "/forum/getArticleDetail",
+    doLike:"/forum/doLike"
 }
 
 
@@ -75,6 +102,13 @@ const api = {
 const articleInfo = ref({});
 // 附件
 const attachment = ref({});
+// 是否已点赞
+const haveLike = ref(false);
+
+
+// 快捷操作的位置，有bug
+const quickPanelLeft = (window.innerWidth - proxy.globalInfo.bodywidth) / 2 - 115
+
 const getArticleDetatil = async (articleId) =>{
     let result =  await proxy.Request({
         url:api.getArticleDetatil,
@@ -88,13 +122,42 @@ const getArticleDetatil = async (articleId) =>{
 
     attachment.value = result.data.attachment;
     articleInfo.value = result.data.forumArticle;
-
+    haveLike.value = result.data.haveLike
 }
 onMounted(()=>{
     getArticleDetatil(route.params.articleId);
 })
 
+// 往下滚到指定位置
+const goToPosition = (domId) =>{
+    document.querySelector('#'+domId).scrollIntoView();
+}
 
+// 点赞
+const doLikeHandler = async() =>{
+
+    if(!store.getters.getLoginUserInfo){
+        store.commit("showLogin",true)
+        return;
+    }
+    let result = await proxy.Request({
+        url:api.doLike,
+        params:{
+            articleId : articleInfo.value.articleId
+        }
+    })
+    if(!result){
+        return;
+    }
+    haveLike.value = !haveLike.value
+    // 点赞就+1 取消赞就-1
+    let goodCount = 1;
+    if(!haveLike.value){
+        goodCount = -1;
+    }
+    articleInfo.value.goodCount += goodCount
+
+}
 
 
 </script>
@@ -153,7 +216,7 @@ onMounted(()=>{
             }
             .detail-content{
                 margin-top: 10px;
-                letter-spacing: 1px;
+                // letter-spacing: 1px;
                 line-height: 22px;
                 a{
                     text-decoration: none;
@@ -174,11 +237,21 @@ onMounted(()=>{
 
             .attachment-panel{
                 margin-top: 40px;
+                .title{
+                    margin-bottom: 10px;
+                }
                 .attachment-info{
                     display: flex;
                     align-items: center;
+                    color: #4a4a4a;
                     .item{
                         margin-right: 10px;
+                    }
+                    .icon-zip,.file-name{
+                        color: rgb(18, 149, 218);
+                    }
+                    .integral{
+                        color: red;
                     }
                 }
                 
@@ -192,11 +265,39 @@ onMounted(()=>{
         }
     }
 
+    .quick-panel{
+        position: absolute;
+        top: 200px;
+        text-align: center;
+        width: 50px;
+        .el-badge__content{
+            top: 5px;
+            right: 15px;
+        }
+        .quick-item{
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            .iconfont{
+                font-size: 22px;
+                color: #61666d;
+            }
+            .have-like{
+                color: #f56c6c !important;
+            }
+        }
 
+
+    }
 
     .aside{
         position: fixed;
-        // border: 1px solid red;
         top: 107px;
         right: 310px;
         background-color: #fff;

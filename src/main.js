@@ -20,6 +20,8 @@ import NoData from "@/components/NoData.vue"
 import Verify from './utils/Verify'
 import Message from './utils/Message'
 import Request from './utils/Request'
+import Utils from './utils/Utils'
+
 const app = createApp(App)
 
 app.component("Dialog",Dialog)
@@ -41,5 +43,7 @@ app.config.globalProperties.globalInfo = {
 app.config.globalProperties.Verify = Verify
 app.config.globalProperties.Message = Message
 app.config.globalProperties.Request = Request
+app.config.globalProperties.Utils = Utils
+
 
 app.mount('#app')

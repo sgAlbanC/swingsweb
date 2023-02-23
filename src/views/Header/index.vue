@@ -165,7 +165,7 @@ watch(
     () => store.state.showLogin,
     (newVal,oldVal)=>{
         if(newVal){
-            showPanel(1);
+            loginAndRegister(1);
         }
     }
 

@@ -86,7 +86,7 @@ const request = (config) => {
         errorCallback: config.errorCallback,
         showError: config.showError
     }).catch(error => {
-        console.log(error);
+        // console.log(error);
         if (error.showError) {
             Message.error(error.msg);
         }

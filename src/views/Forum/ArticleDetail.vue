@@ -28,19 +28,19 @@
 
                 </div>
                 <!-- 内容区域 使用v-html渲染 -->
-                <div class="detail-content" v-html="articleInfo.content"></div>
+                <div class="detail-content" id="detail" v-html="articleInfo.content"></div>
 
                 <!-- 是否有附件，附件渲染 -->
                 <div class="attachment-panel" v-if="attachment" id="view-attachment">
                     <div class="title">附件</div>
                     <div class="attachment-info">
-                        <div class="iconfont icon-zip item"></div>
+                        <div class="iconfont icon-zip item" ></div>
                         <div class="file-name item">{{ attachment.fileName }}</div>
                         <div class="size item">{{ proxy.Utils.sizeToStr(attachment.fileSize) }}</div>
                         <div class="item">需要 <span class="integral">{{ attachment.integral }}</span> 积分</div>
-                        <div class="download-count item">已下载 {{ attachment.integral }}</div>
+                        <div class="download-count item">已下载 {{ attachment.downloadCount }}</div>
                         <div class="download-btn item">
-                            <el-button type="primary" size="small">下载</el-button>
+                            <el-button type="primary" size="small" @click="downloadAttachment(attachment.fileId)">下载</el-button>
                         </div>
                     </div>
                 </div>
@@ -62,9 +62,9 @@
             </el-badge>
 
             <!-- 评论 -->
-            <el-badge :value="articleInfo.goodCount"
+            <el-badge :value="articleInfo.commentCount"
                 type="info"
-                :hidden="!articleInfo.goodCount>0"
+                :hidden="!articleInfo.commentCount>0"
                 class="quick-item"
                 @click="goToPosition('view-comment')">
                 <span class="iconfont icon-comment"></span>
@@ -74,6 +74,11 @@
                 <span class="iconfont icon-attachment"></span>
             </div>
         </div>
+        <!-- 图片预览 -->
+        <div class="">
+            <ImageViewer ref="imageViewerRef" :imageList="previewImgList"></ImageViewer>
+        </div>
+
         <div class="aside">
             sasasas
         </div>
@@ -81,7 +86,9 @@
 </template>
 
 <script setup>
-import { getCurrentInstance ,onMounted,ref ,watch} from 'vue';
+import hljs from "highlight.js";
+import "highlight.js/styles/atom-one-light.css"; //样式
+import { getCurrentInstance ,onMounted,ref ,watch,nextTick} from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex'
@@ -93,11 +100,13 @@ const store = useStore()
 
 const api = {
     getArticleDetatil : "/forum/getArticleDetail",
-    doLike:"/forum/doLike"
+    doLike:"/forum/doLike",
+    getUserDownloadInfo: "/forum/getUserDownloadInfo",
+    attachmentDownload:'/api/forum/attachmentDownload'
+    
 }
-
-
-
+// 当前用户信息状态
+const currentUserInfo = ref({});
 // 文章详情
 const articleInfo = ref({});
 // 附件
@@ -106,9 +115,19 @@ const attachment = ref({});
 const haveLike = ref(false);
 
 
-// 快捷操作的位置，有bug
-const quickPanelLeft = (window.innerWidth - proxy.globalInfo.bodywidth) / 2 - 115
+//监听登录用户
+watch(
+  () => store.state.loginUserInfo,
+  (newVal, oldVal) => {
+    currentUserInfo.value = newVal || {};
+  },
+  { immediate: true, deep: true }
+);
 
+// 快捷操作的位置，有bug
+const quickPanelLeft = -100
+
+// 获取文章详情
 const getArticleDetatil = async (articleId) =>{
     let result =  await proxy.Request({
         url:api.getArticleDetatil,
@@ -123,6 +142,9 @@ const getArticleDetatil = async (articleId) =>{
     attachment.value = result.data.attachment;
     articleInfo.value = result.data.forumArticle;
     haveLike.value = result.data.haveLike
+
+    imagePreview();
+    highlightCode();
 }
 onMounted(()=>{
     getArticleDetatil(route.params.articleId);
@@ -130,12 +152,12 @@ onMounted(()=>{
 
 // 往下滚到指定位置
 const goToPosition = (domId) =>{
-    document.querySelector('#'+domId).scrollIntoView();
+    document.querySelector('#' + domId).scrollIntoView();
 }
 
 // 点赞
 const doLikeHandler = async() =>{
-
+    // 点赞之前先判断是否有 用户信息；就是是否登录
     if(!store.getters.getLoginUserInfo){
         store.commit("showLogin",true)
         return;
@@ -159,11 +181,93 @@ const doLikeHandler = async() =>{
 
 }
 
+//下载附件
+const downloadAttachment = async (fileId) => {
+  if (!store.getters.getLoginUserInfo) {
+    store.commit("showLogin",true)
+    return;
+  }
+  // 0积分
+  if (
+    attachment.value.integral == 0 ||
+    currentUserInfo.value.userId == articleInfo.value.userId
+  ) {
+    downloadDo(fileId);
+    return;
+  }
+
+  //获取用户下载信息
+  let result = await proxy.Request({
+    url: api.getUserDownloadInfo,
+    params: {
+      fileId: fileId,
+    },
+  });
+  if (!result) {
+    return;
+  }
+  //判断用户是否已下载过
+  if (result.data.haveDownload) {
+    downloadDo(fileId);
+    return;
+  }
+
+  //判断用户积分是否够
+  if (result.data.userIntegral < attachment.value.integral) {
+    proxy.Message.warning("你的积分不够，无法下载");
+    return;
+  }
+
+  proxy.Confirm(
+    `你还有${result.data.userIntegral}积分，当前下载会扣除${attachment.value.integral}积分，确定要下载吗？`,
+    () => {
+      downloadDo(fileId);
+    }
+  );
+};
+
+const downloadDo = (fileId) => {
+  document.location.href = api.attachmentDownload + "?fileId=" + fileId;
+  attachment.value.downloadCount = attachment.value.downloadCount + 1;
+};
+
+//文章图片预览
+const imageViewerRef = ref(null);
+const previewImgList = ref([]);
+const imagePreview = () => {
+  nextTick(() => {
+    const imageNodeList = document
+      .querySelector("#detail")
+      .querySelectorAll("img");
+    const imageList = [];
+    imageNodeList.forEach((item, index) => {
+      const src = item.getAttribute("src");
+      imageList.push(src);
+      item.addEventListener("click", () => {
+        imageViewerRef.value.show(index);
+      });
+    });
+    previewImgList.value = imageList;
+  });
+};
+
+// 代码高亮
+const highlightCode=()=>{
+    // 页面加载完成之后
+    nextTick(()=>{
+        let blocks = document.querySelectorAll('pre code')
+        blocks.forEach((item) => {
+            hljs.highlightBlock(item);
+        });
+    })
+}
+
 
 </script>
 
 <style lang="less">
 .article-detail{
+    position: relative;
     margin: 0 auto;
     .board-panel{
         margin: 20px 0 10px 0;
@@ -267,7 +371,7 @@ const doLikeHandler = async() =>{
 
     .quick-panel{
         position: absolute;
-        top: 200px;
+        top: 150px;
         text-align: center;
         width: 50px;
         .el-badge__content{
@@ -297,9 +401,9 @@ const doLikeHandler = async() =>{
     }
 
     .aside{
-        position: fixed;
-        top: 107px;
-        right: 310px;
+        position: absolute;
+        top: 27px;
+        right: 200px;
         background-color: #fff;
         padding: 15px;
     }

@@ -1,3 +1,5 @@
+
+// 数字转换为 比特 大小表示
 export default {
     sizeToStr: (size) => {
         var data = ''

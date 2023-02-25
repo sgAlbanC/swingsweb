@@ -25,10 +25,10 @@
                   {{ data.readCount==0?"阅读":data.readCount }}
                </span>
                <span class="iconfont icon-good">
-                  {{ data.readCount==0?"点赞":data.readCount }}
+                  {{ data.goodCount==0?"点赞":data.goodCount }}
                </span>
                <span class="iconfont icon-comment">
-                  {{ data.readCount==0?"评论":data.readCount }}
+                  {{ data.commentCount==0?"评论":data.commentCount }}
                </span>
             </div>
          </div>

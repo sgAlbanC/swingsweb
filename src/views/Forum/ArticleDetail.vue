@@ -46,8 +46,13 @@
                 </div>
             </div>
 
+            <!-- 评论板块 -->
             <div class="detail-comment" id="view-comment">
-                评论
+               <CommentList 
+                    :articleId="articleInfo.articleId" 
+                    :articleUserId="articleInfo.userId" 
+                    v-if="articleInfo.articleId"
+               ></CommentList>
             </div>
         </div>
         <div class="quick-panel" :style="{left:quickPanelLeft + 'px'}">
@@ -80,7 +85,7 @@
         </div>
 
         <div class="aside">
-            sasasas
+            侧边栏
         </div>
    </div>
 </template>
@@ -92,6 +97,9 @@ import { getCurrentInstance ,onMounted,ref ,watch,nextTick} from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex'
+
+import CommentList from './CommentList.vue'
+
 const {proxy} = getCurrentInstance()
 const route = useRoute()
 const router = useRouter()
@@ -145,6 +153,9 @@ const getArticleDetatil = async (articleId) =>{
 
     imagePreview();
     highlightCode();
+    // 更新一下导航active情况，（如果从主页面直接点击文章进来，需要重新渲染导航）
+    store.commit("setActivePboardId", result.data.forumArticle.pBoardId);
+    store.commit("setActiveBoardId", result.data.forumArticle.boardId);
 }
 onMounted(()=>{
     getArticleDetatil(route.params.articleId);
@@ -269,6 +280,7 @@ const highlightCode=()=>{
 .article-detail{
     position: relative;
     margin: 0 auto;
+    // height: 100vh;  // 加了这个，滚动条不能固定
     .board-panel{
         margin: 20px 0 10px 0;
         .iconfont{

@@ -37,7 +37,7 @@
   //禁止滚动
   //意思是当我们打开窗口时，就隐藏滚动条
   const stopScroll = () => {
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow='hidden';
   };
   
   // 开始滚动

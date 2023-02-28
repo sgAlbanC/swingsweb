@@ -27,7 +27,7 @@ const router = createRouter({
             },{
                 path:'/user/:userId',
                 name:'用户信息',
-                component:()=>import('@/views/ucenter/Ucenter.vue')
+                component:()=>import('@/views/Ucenter/Ucenter.vue')
             }]
                 
         }

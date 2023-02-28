@@ -1,4 +1,5 @@
 <template>
+    <div class="comment-item-panel">
    <div class="comment-item">
     <Avatar :userId="commentData.userId" :widt="50"></Avatar>
     <div class="comment-info">
@@ -19,7 +20,7 @@
             <div class="iconfont icon-good">
                 {{ commentData.goodCount>0?commentData.goodCount:" 点赞" }}
             </div>
-            <div class="iconfont icon-comment">
+            <div class="iconfont icon-comment" @click="showReplayPanel(commentData)">
                 回复
             </div>
             
@@ -38,9 +39,26 @@
         </div>
     </div>
    </div>
+   <div class="replay-info" v-if="commentData.showReply">
+        <CommentPost 
+            :avatarWidth="30" 
+            :userId="currentUserId" 
+            :showInsertImg="false"
+            :pCommentId="pCommentId"
+            :replayUserId="replayUserId"
+            >
+        </CommentPost>
+    </div>
+</div>
 </template>
 
 <script setup>
+import CommentPost from './CommentPost.vue';
+import { ref,watch,getCurrentInstance} from 'vue'
+import { useStore } from 'vuex';
+
+const store = useStore()
+const {proxy} = getCurrentInstance()
 
 const props = defineProps({
     commentData:{
@@ -54,12 +72,34 @@ const props = defineProps({
     }
 })
 
+const pCommentId = ref(0)  // 评论的父级Id
+const replayUserId = ref(null)  // 二级评论，对评论里面的评论再评论
+
+const emit = defineEmits(["hiddenAllReplay"])
+// 点击回复 显示评论
+const showReplayPanel = (curData) =>{
+
+
+    const haveShow = curData.showReply == undefined?false:curData.showReply
+    emit("hiddenAllReplay")
+    curData.showReply = !haveShow;
+    pCommentId.value = curData.commentId  // curData是此条评论的返回值，他的commentId就是我们评论的父级
+}
+
 
 </script>
 
 <style scoped lang="less">
+
+.comment-item-panel{
+        border-bottom: 1px solid #dcdfe6;   // border颜色 专门的
+        margin-bottom: 10px;
+        padding-bottom: 10px ;
+}
 .comment-item{
+
     display: flex;
+    
     .comment-info{
         margin-left: 10px;
         .nick-name{
@@ -92,5 +132,9 @@ const props = defineProps({
             margin-right: 5px;
         }
     }
+}
+
+.replay-info{
+    margin:10px 0 0 50px
 }
 </style>

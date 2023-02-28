@@ -15,19 +15,18 @@
         :userId="currentUserInfo.userId"
         ></CommentPost>
     </div>
-    <div class="">
+    <div>
         <!-- @loadData="loadComment" 分页 点击过后会重新load数据 -->
         <DataList :dataSource="commentListInfo" :loading="loading" @loadData="loadComment">
             <template #default="{data}">
-                <CommentListItem class="Comment-list-item"
+                <CommentListItem 
                 :commentData="data" 
                 :articleUserId="articleUserId"
                 :currentUserId="currentUserInfo.userId"
+                @hiddenAllReplay="hiddenAllReplayHandler"
                 ></CommentListItem>
-            </template>
-            
-        </DataList>
-        
+            </template>      
+        </DataList> 
     </div>
    </div>
 </template>
@@ -98,6 +97,12 @@ const loadComment = async ()=>{
 }
 loadComment()
 
+// 隐藏所有回复框
+const hiddenAllReplayHandler =() =>{
+    commentListInfo.value.list.forEach((element)=>{
+        element.showReply = false
+    })
+}
 
 
 </script>
@@ -115,12 +120,6 @@ loadComment()
             margin-right: 20px;
         }
         
-    }
-
-    .Comment-list-item{
-        margin-bottom: 20px;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 10px;
     }
 }
 </style>

@@ -96,7 +96,6 @@ const postCommentDo = ()=>{
     params.articleId = props.articleId
     params.pCommentId = props.pCommentId
     params.replyUserId = props.replyUserId 
-
     let result = await proxy.Request({
       url:api.postComment,
       params
@@ -109,6 +108,7 @@ const postCommentDo = ()=>{
     // 输入完成过后，需要在评论列表中 unshift一条评论，这个也需要父组件去做
     // 记住可以有多个父组件，父组件自己去调用这个方法，做相应的操作
     // 传一个参数过去，就是我们评论完成过后，会返回一个res.data，把这个data传过去
+    console.log(result.data)
     emit("postCommentFinish",result.data);
   })
 }

@@ -6,7 +6,8 @@
     <el-skeleton :row="2" animated></el-skeleton>
   </div>
   
-   <div v-for="item in dataSource.list" class="" v-else>
+    <!-- 这些请求返回的数据都是由list 属性的 -->
+   <div v-for="item in dataSource.list" class="" v-else :key="item">
     <!-- 为什么是插槽？这个插槽代表其他组件使用这个组件的时候，中间可以使用template去添加东西 -->
         <slot :data="item"></slot> 
    </div>
@@ -15,7 +16,7 @@
       v-if="dataSource.pageTotal > 1"
       background
       :total="dataSource.totalCount"
-      :current-page.sync="dataSource.pageNo"
+      :current-page="dataSource.pageNo"
       layout="prev, pager, next"
       @current-change="handlePageNoChange"
       style="text-align: right"

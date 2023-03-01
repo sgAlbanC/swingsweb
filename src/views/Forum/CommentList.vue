@@ -11,15 +11,20 @@
     <div class="comment-post-panel">
         <CommentPost
         :articleId="articleId"
+        :pCommentId="0"
         :avatarWidth="50"
         :userId="currentUserInfo.userId"
+        :showInsertImg="currentUserInfo.userId != null"
+        @postCommentFinish="postCommentFinish"
         ></CommentPost>
     </div>
     <div>
         <!-- @loadData="loadComment" 分页 点击过后会重新load数据 -->
         <DataList :dataSource="commentListInfo" :loading="loading" @loadData="loadComment">
+            <!-- 这里的data是在DataList里面弄的 -->
             <template #default="{data}">
-                <CommentListItem 
+                <CommentListItem
+                :articleId="articleId"
                 :commentData="data" 
                 :articleUserId="articleUserId"
                 :currentUserId="currentUserInfo.userId"
@@ -93,7 +98,7 @@ const loadComment = async ()=>{
     if(!result){
         return;
     }
-    commentListInfo.value = result.data;
+    commentListInfo.value = result.data;        // commentListInfo是请求回来的评论数据
 }
 loadComment()
 
@@ -102,6 +107,11 @@ const hiddenAllReplayHandler =() =>{
     commentListInfo.value.list.forEach((element)=>{
         element.showReply = false
     })
+}
+
+// 评论完成
+const postCommentFinish=(resultData)=>{
+    commentListInfo.value.list.unshift(resultData)
 }
 
 

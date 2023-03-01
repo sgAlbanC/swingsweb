@@ -41,11 +41,13 @@
    </div>
    <div class="replay-info" v-if="commentData.showReply">
         <CommentPost 
-            :avatarWidth="30" 
-            :userId="currentUserId" 
-            :showInsertImg="false"
+            :articleId="articleId"
             :pCommentId="pCommentId"
             :replayUserId="replayUserId"
+            :userId="currentUserId" 
+            :avatarWidth="30" 
+            :showInsertImg="false"
+            @postCommentFinish="postCommentFinish"
             >
         </CommentPost>
     </div>
@@ -61,6 +63,13 @@ const store = useStore()
 const {proxy} = getCurrentInstance()
 
 const props = defineProps({
+    // 是CommentList里面请求回来的评论数据，然后传过来的。每一页不同；
+    // 这些东西我在模板中就当做正常的数据来渲染，只是是从父级组件传来的
+
+    articleId:{
+        type:String
+    },
+
     commentData:{
         type:Object
     },
@@ -75,15 +84,24 @@ const props = defineProps({
 const pCommentId = ref(0)  // 评论的父级Id
 const replayUserId = ref(null)  // 二级评论，对评论里面的评论再评论
 
-const emit = defineEmits(["hiddenAllReplay"])
+const emit = defineEmits(["hiddenAllReplay"])   // 定义一个传送门
 // 点击回复 显示评论
 const showReplayPanel = (curData) =>{
-
-
-    const haveShow = curData.showReply == undefined?false:curData.showReply
-    emit("hiddenAllReplay")
+    if(!store.getters.getLoginUserInfo){
+        store.commit("showLogin",true)
+        return;
+    }
+    const haveShow = curData.showReply == undefined?false:curData.showReply  // 将状态保存起来,不然下面那个方法将吧所有的变成false，一直都是false转true，就关不掉。
+    emit("hiddenAllReplay")     // 在需要让父组件调用方法的地方 传送出去。（父组件将所有的评论的回复的showReply这个属性都置为false
     curData.showReply = !haveShow;
+    
     pCommentId.value = curData.commentId  // curData是此条评论的返回值，他的commentId就是我们评论的父级
+}
+
+// 评论完成
+const postCommentFinish=(resultData)=>{
+    const children = props.commentData.children||[]
+    children.unshift(resultData)
 }
 
 

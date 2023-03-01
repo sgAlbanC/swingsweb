@@ -2,7 +2,7 @@
    <div class="container" :style="{width:proxy.globalInfo.bodywidth + 'px'}">
     <!-- 二级板块展示信息    -->
     <div class="sub-board" v-if="pBoardId">
-        <span v-for="item in subBoardList" :class="['board-item',item.boardId == boardId ? 'active':'']">
+        <span v-for="item in subBoardList" :class="['board-item',item.boardId == boardId ? 'active':'']" :key="item">
             <router-link :to="`/forum/${item.pBoardId}/${item.boardId}`"> {{ item.boardName }}</router-link>
         </span>
     </div>

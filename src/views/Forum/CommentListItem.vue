@@ -9,7 +9,13 @@
         </div>
         <!-- 评论内容部分 -->
         <div class="comment-content">
-            <span v-html="commentData.content"></span>
+            <div v-html="commentData.content"></div>
+            <br />
+            <CommentImage 
+                v-if="commentData.imgPath" 
+                :src="proxy.globalInfo.imageUrl + commentData.imgPath.replace('.','_.')"
+                :imgList="proxy.globalInfo.imageUrl + commentData.imgPath"
+            ></CommentImage>
         </div>
         <!-- 对评论的操作 -->
         <div class="op-panel">
@@ -47,7 +53,6 @@
                         <span v-if="sub.userId == articleUserId" class="tag-author">作者</span>
                         <span class="reply">回复</span>
                         <span class="reply-nickname"  @click="gotoUcenter(sub.replyUserId)">@{{ sub.replyNickName }}: </span>
-                        
                         <span class="sub-content" v-html="sub.content"></span>
                     </div>
                     <div class="op-panel">
@@ -87,6 +92,7 @@
 </template>
 
 <script setup>
+import CommentImage from "./CommentImage.vue";
 import CommentPost from './CommentPost.vue';
 import { ref,watch,getCurrentInstance} from 'vue'
 import { useStore } from 'vuex';

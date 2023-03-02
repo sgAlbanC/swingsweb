@@ -15,8 +15,13 @@
                     v-model="formData.content"
                 ></el-input>
 
-                <div class="insert-img" v-if="userId">
+                <div class="insert-img" v-if="showInsertImg">
+                    <div class="pre-img" v-if="commentImg">
+                      <CommentImage :src="commentImg"></CommentImage>
+                      <span class="iconfont icon-remove" @click="removeCommentImg"></span>
+                    </div>
                     <el-upload 
+                        v-else
                         name="file" 
                         :show-file-list="false" 
                         accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG,.gif,.GIF,.bmp,.BMP"
@@ -34,6 +39,7 @@
 </template>
 
 <script setup>
+import CommentImage from "./CommentImage.vue";
 import { ref, reactive, getCurrentInstance } from "vue";
 const { proxy } = getCurrentInstance();
 
@@ -86,7 +92,6 @@ const rules = {
 };
 
 const emit = defineEmits(["postCommentFinish"])
-
 const postCommentDo = ()=>{
   formDataRef.value.validate(async (valid)=>{
     if(!valid){
@@ -113,11 +118,23 @@ const postCommentDo = ()=>{
   })
 }
 
+//选择图片
+const commentImg = ref(null);
+const selectImg = (file) => {
+  file = file.file;
+  let img = new FileReader();
+  img.readAsDataURL(file);
+  img.onload = ({ target }) => {
+    let imgData = target.result;
+    commentImg.value = imgData;
+    formData.value.image = file;
+  };
+};
 
-// 选择图片方法逻辑
-const selectImg = ()=>{
-
-}
+const removeCommentImg = () => {
+  commentImg.value = null;
+  formData.value.image = null;
+};
 
 </script>
 
@@ -141,11 +158,11 @@ const selectImg = ()=>{
                     margin-top: 10px;
                     position: relative;
                     .iconfont {
-                    cursor: pointer;
-                    position: absolute;
-                    top: -10px;
-                    right: -10px;
-                    color: rgb(121, 121, 121);
+                        cursor: pointer;
+                        position: absolute;
+                        top: -10px;
+                        right: -10px;
+                        color: rgb(121, 121, 121);
                     }
                 }
             }

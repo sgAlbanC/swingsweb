@@ -9,12 +9,14 @@
         </div>
         <!-- 评论内容部分 -->
         <div class="comment-content">
-            <div v-html="commentData.content"></div>
+            <span :class="['set-top',commentData.topType==0?'top-invisible':'']">置顶</span>
+            <span v-html="commentData.content"></span>
             <br />
             <CommentImage 
+                class="comment-image"
                 v-if="commentData.imgPath" 
                 :src="proxy.globalInfo.imageUrl + commentData.imgPath.replace('.','_.')"
-                :imgList="proxy.globalInfo.imageUrl + commentData.imgPath"
+                :imgList="[proxy.globalInfo.imageUrl + commentData.imgPath]"
             ></CommentImage>
         </div>
         <!-- 对评论的操作 -->
@@ -36,7 +38,7 @@
                 <div class="iconfont icon-more"></div>
                 <template #dropdown>
                     <el-dropdown-menu>
-                        <el-dropdown-item>
+                        <el-dropdown-item @click="opTop(commentData)">
                             {{ commentData.topType ==0?'设为置顶':'取消置顶' }}
                         </el-dropdown-item>
                     </el-dropdown-menu>
@@ -103,7 +105,8 @@ const store = useStore()
 const {proxy} = getCurrentInstance()
 
 const api = {
-    doLike:'/comment/doLike'
+    doLike:'/comment/doLike',
+    changeTopType:'/comment/changeTopType'
 }
 
 const props = defineProps({
@@ -129,7 +132,7 @@ const pCommentId = ref(0)  // 评论的父级Id
 const replyUserId = ref(null)  // 二级评论，对评论里面的评论再评论
 const placeholderInfo = ref(null)
 
-const emit = defineEmits(["hiddenAllReplay"])   // 定义一个传送门
+const emit = defineEmits(["hiddenAllReplay","reloadData"])   // 定义一个传送门
 // 点击回复 显示评论
 const showReplayPanel = (curData,type) =>{
     if(!store.getters.getLoginUserInfo){
@@ -179,6 +182,22 @@ const doLike =async (data) => {
     data.likeType = result.data.likeType;    // 是否点赞
 }
 
+// 置顶
+const opTop = async (data) =>{
+    console.log(data.commentId)
+    console.log(data.topType)
+    let result = await proxy.Request({
+        url:api.changeTopType,
+        params:{
+            commentId:data.commentId,
+            topType:data.topType==1?0:1     // 如果已经置顶，则传0取消；若没有置顶，则传1置顶
+        }
+    })
+    if(!result){
+        return;
+    }
+    emit("reloadData")
+}
 
 
 </script>
@@ -209,6 +228,23 @@ const doLike =async (data) => {
                 padding: 2px;
                 margin-left: 5px;
                 font-size: 12px;
+            }
+        }
+        .comment-content{
+            .top-invisible{
+                display: none;
+            }
+            .set-top{
+                background-color:#fff;
+                border: 1px solid #ff6699;
+                color: #ff6699;
+                border-radius: 5px;
+                padding: 1px 2px;
+                margin-right: 5px;
+                font-size: 12px;
+            }
+            .comment-image{
+                margin-top: 10px;
             }
         }
     }

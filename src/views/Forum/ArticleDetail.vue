@@ -52,6 +52,7 @@
                     :articleId="articleInfo.articleId" 
                     :articleUserId="articleInfo.userId" 
                     v-if="articleInfo.articleId"
+                    @updateCommentCount="updateCommentCount"
                ></CommentList>
             </div>
         </div>
@@ -67,7 +68,8 @@
             </el-badge>
 
             <!-- 评论 -->
-            <el-badge :value="articleInfo.commentCount"
+            <el-badge 
+                :value="articleInfo.commentCount"
                 type="info"
                 :hidden="!articleInfo.commentCount>0"
                 class="quick-item"
@@ -190,6 +192,11 @@ const doLikeHandler = async() =>{
     }
     articleInfo.value.goodCount += goodCount
 
+}
+
+// 评论数量增加
+const updateCommentCount = (totalCount)=>{
+    articleInfo.value.commentCount = totalCount
 }
 
 //下载附件

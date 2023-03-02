@@ -8,28 +8,24 @@
     fit="scale-down"
     loading="lazy"
     hide-on-click-modal
-  >
-
-  </el-image>
+  />
 </template>
 
 <script setup>
-
 const props = defineProps({
-    src:{
-        type:String,
-    },
-    imgList:{
-        type:Array,
-    }
-})
-
+  src: {
+    type: String,
+  },
+  imgList: {
+    type: Array,
+  },
+});
 </script>
 
 <style lang="less" scoped>
-.comment-img{
-    height: 80px;
-    width: 80px;
-    background-color: #eee;
+.comment-img {
+  width: 80px;
+  height: 80px;
+  background: #eee;
 }
 </style>

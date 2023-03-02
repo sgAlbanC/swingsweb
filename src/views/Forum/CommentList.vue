@@ -1,11 +1,11 @@
 <template>
    <div class="comment-panel">
     <div class="comment-title">
-        <div class="title">评论 <span class="count">{{ 10 }}</span></div>
+        <div class="title">评论 <span class="count">{{ commentListInfo.totalCount }}</span></div>
         <div class="tab">
-            <span>热榜</span>
+            <span @click="orderChange(0)" :class="[orderType==0?'active':'']">热榜</span>
             <el-divider direction="vertical"></el-divider>
-            <span>最新</span>
+            <span @click="orderChange(1)" :class="[orderType==1?'active':'']">最新</span>
         </div>
     </div>
     <div class="comment-post-panel">
@@ -29,6 +29,7 @@
                 :articleUserId="articleUserId"
                 :currentUserId="currentUserInfo.userId"
                 @hiddenAllReplay="hiddenAllReplayHandler"
+                @reloadData="loadComment"
                 ></CommentListItem>
             </template>      
         </DataList> 
@@ -46,9 +47,6 @@ const {proxy} = getCurrentInstance()
 
 const api = {
     loadComment: "/comment/loadComment",
-    postComment:'/comment/postComment',
-    doLike:'/comment/doLike',
-    changeTopType:'/comment/changeTopType'
 }
 
 const store = useStore()
@@ -79,6 +77,11 @@ watch(()=>store.state.loginUserInfo,(newVal,oldVal)=>{
 
 // 排序
 const orderType = ref(0);
+const orderChange = (type)=>{
+    orderType.value = type;
+    loadComment();
+}
+
 
 // 评论列表
 const loading = ref(null)
@@ -92,6 +95,7 @@ const loadComment = async ()=>{
     loading.value =true
     let result = await proxy.Request({
         url:api.loadComment,
+        showLoading:false,
         params:params
     })
     loading.value=false
@@ -110,8 +114,14 @@ const hiddenAllReplayHandler =() =>{
 }
 
 // 评论完成
+
+const emit = defineEmits(["updateCommentCount"])
 const postCommentFinish=(resultData)=>{
     commentListInfo.value.list.unshift(resultData)
+    // 更新评论数量
+    const totalCount = commentListInfo.value.totalCount+1;
+    commentListInfo.value.totalCount = totalCount
+    emit("updateCommentCount",totalCount)
 }
 
 
@@ -129,7 +139,12 @@ const postCommentFinish=(resultData)=>{
             font-weight: bold;
             margin-right: 20px;
         }
-        
+        .tab{
+            cursor: pointer;
+            .active{
+                color:#409eff ;
+            }
+        }
     }
 }
 </style>

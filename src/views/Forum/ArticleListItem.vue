@@ -87,7 +87,7 @@ const props = defineProps({
             font-weight: bold;
             color: #FF6699;
             border: 1px solid #FF6699;
-            border-radius: 20px;
+            border-radius:5px;
             padding: 1px 4px;
             margin-right: 4px;
          }

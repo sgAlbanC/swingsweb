@@ -17,6 +17,11 @@ import Cover from "@/components/Cover.vue"
 import DataList from "@/components/DataList.vue"
 import NoData from "@/components/NoData.vue"
 import ImageViewer from "@/components/ImageViewer.vue"
+import EditorMarkdown from "@/components/EditorMarkdown.vue"
+import EditorHtml from "@/components/EditorHtml.vue"
+import CoverUpload from "@/components/CoverUpload.vue"
+import AttachmentSelector from "@/components/AttachmentSelector.vue"
+
 // 全局方法
 import Verify from './utils/Verify'
 import Message from './utils/Message'
@@ -32,6 +37,10 @@ app.component("Cover",Cover)
 app.component("DataList",DataList)
 app.component("NoData",NoData)
 app.component("ImageViewer",ImageViewer)
+app.component("EditorMarkdown",EditorMarkdown)
+app.component("EditorHtml",EditorHtml)
+app.component("CoverUpload",CoverUpload)
+app.component("AttachmentSelector",AttachmentSelector)
 
 app.use(store)
 app.use(router)

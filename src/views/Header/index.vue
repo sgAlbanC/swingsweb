@@ -1,11 +1,11 @@
 <template>
     <div class="header-content" :style="{width:proxy.globalInfo.bodywidth + 'px' }">
         <router-link to="/" class="logo">
-            <span v-for="item in logoInfo" :style="{color:item.color}">{{ item.letter }}</span>
+            <span v-for="item in logoInfo" :style="{color:item.color}" :key="item">{{ item.letter }}</span>
         </router-link>
         <div class="menu-panel">
             <router-link :class="['menu-item',activePboardId == undefined ? 'active':'']" to="/">首页</router-link>
-            <template v-for="item in boardList">
+            <template v-for="item in boardList" :key="item">
                 <el-popover palcement="bottom-start"
                     :width=200
                     trigger="hover"
@@ -15,7 +15,7 @@
                         <span :class="['menu-item',item.boardId == activePboardId ? 'active' : '']" @click="boardClickHandler(item)">{{ item.boardName }}</span>
                     </template>
                     <div class="sub-board-list" >
-                        <span :class="['sub-board',subBoard.boardId==activeBoardId?'active':'']" v-for="subBoard in item.children" @click="subBoardClickHandler(subBoard)">
+                        <span :class="['sub-board',subBoard.boardId==activeBoardId?'active':'']" v-for="subBoard in item.children" @click="subBoardClickHandler(subBoard)" :key="subBoard">
                         {{ subBoard.boardName }}</span>
                     </div>
                 </el-popover>
@@ -24,9 +24,9 @@
 
         </div>
         <div class="userinfo-panel">
-            <el-button type="primary">
+            <el-button type="primary" @click="newPost">
                 发帖 
-                <span class="iconfont icon-add "></span>
+                <span class="iconfont icon-add"></span>
             </el-button>
             <el-button type="primary">
                 搜索
@@ -116,6 +116,19 @@ const loadBoard = async ()=>{
     boardList.value = result.data
     store.commit('saveBoardList',result.data)
 }
+
+
+// 发布文章
+const newPost = () =>{
+    if(!store.getters.getLoginUserInfo){
+        store.commit("showLogin",true)
+        return;
+    }
+    router.push(`/newPost`)
+}
+
+
+
 
 
 //退出

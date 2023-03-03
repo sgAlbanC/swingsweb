@@ -20,7 +20,12 @@
     </div>
     <div>
         <!-- @loadData="loadComment" 分页 点击过后会重新load数据 -->
-        <DataList :dataSource="commentListInfo" :loading="loading" @loadData="loadComment">
+        <DataList 
+            :dataSource="commentListInfo" 
+            :loading="loading" 
+            @loadData="loadComment"
+            noDataMsg="暂无评论"
+        >
             <!-- 这里的data是在DataList里面弄的 -->
             <template #default="{data}">
                 <CommentListItem

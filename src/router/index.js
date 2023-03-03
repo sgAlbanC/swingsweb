@@ -28,9 +28,17 @@ const router = createRouter({
                 path:'/user/:userId',
                 name:'用户信息',
                 component:()=>import('@/views/Ucenter/Ucenter.vue')
-            }]
-                
-        }
+            },{
+                path:'/newPost',
+                name:'发布文章',
+                component:()=>import('@/views/Forum/EditPost.vue')
+            },{
+                path:'/editPost/:articleId',
+                name:'编辑文章',
+                component:()=>import('@/views/Forum/EditPost.vue')
+            }
+        
+        ]}
 
 
     ]

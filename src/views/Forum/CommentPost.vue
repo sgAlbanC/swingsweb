@@ -17,9 +17,11 @@
 
                 <div class="insert-img" v-if="showInsertImg">
                     <div class="pre-img" v-if="commentImg">
+                      <!-- 图片显示的地方,传图片路径,然后返回这张图片样子 -->
                       <CommentImage :src="commentImg"></CommentImage>
                       <span class="iconfont icon-remove" @click="removeCommentImg"></span>
                     </div>
+                    <!-- 这里才是真正的图片选择逻辑 -->
                     <el-upload 
                         v-else
                         name="file" 

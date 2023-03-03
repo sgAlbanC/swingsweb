@@ -80,7 +80,7 @@
                 v-model="formData.summary"
               ></el-input>
             </el-form-item>
-            <el-form-item label="附件" prop="cover">
+            <el-form-item label="附件" prop="attachment">
               <AttachmentSelector
                 v-model="formData.attachment"
               ></AttachmentSelector>
@@ -104,7 +104,7 @@
                 type="primary"
                 :style="{ width: '100%' }"
                 @click="postHandler"
-                >保存</el-button
+                >提交</el-button
               >
             </el-form-item>
           </div>
@@ -136,21 +136,22 @@ const api = {
 
 const articleId = ref(null);
 const getArticleDetail = () => {
+  // 页面加载完后 我们才去调用。 这样页面不会闪一下
   nextTick(async () => {
     formDataRef.value.resetFields();
     if (articleId.value) {
       //修改
       let result = await proxy.Request({
-        url: api.articleDetail4Update,
+        url: api.articleDetail4Update,  // 修改文章的api，跟获取文章不一样
         params: {
           articleId: articleId.value,
         },
         showError: false,
         errorCallback: (response) => {
           ElMessageBox.alert(response.info, "错误", {
-            "show-close": false,
+            "show-close": false,  // 只能点确定
             callback: (action) => {
-              router.go(-1);
+              router.go(-1); // 用router回退到上一步
             },
           });
         },
@@ -180,6 +181,7 @@ const getArticleDetail = () => {
       }
       formData.value = articleInfo;
     } else {
+      // 新增文章，什么值都没有 ，清空。
       formData.value = {};
       editorType.value = proxy.VueCookies.get("editorType") || 0;
     }
@@ -223,6 +225,7 @@ const postHandler = () => {
       return;
     }
     let params = {};
+    // 浅拷贝
     Object.assign(params, formData.value);
     //设置板块ID
     if (params.boardIds.length == 1) {
@@ -250,7 +253,7 @@ const postHandler = () => {
     if (!(params.cover instanceof File)) {
       delete params.cover;
     }
-    //附件不是文件乐行，值设置为空
+    //附件不是文件类型，值设置为空
     if (!(params.attachment instanceof File)) {
       delete params.attachment;
     }
@@ -287,14 +290,14 @@ const loadBordList = async () => {
 };
 loadBordList();
 
-//编辑器类型 0：富文本  1:markdown
+// 改变编辑器类型 0：富文本  1:markdown、
 const editorType = ref(null);
 const changeEditor = () => {
   proxy.Confirm("切换编辑器会清空正在编辑的内容，确定要切换吗？", () => {
     editorType.value = editorType.value == 0 ? 1 : 0;
     formData.value.content = "";
     formData.value.markdownContent = "";
-    proxy.VueCookies.set("editorType", editorType.value, -1);
+    proxy.VueCookies.set("editorType", editorType.value, -1); // -1是永不过期
   });
 };
 </script>
@@ -314,7 +317,7 @@ const changeEditor = () => {
         .change-editor-type {
           .iconfont {
             cursor: pointer;
-            color: var(--link);
+            color: rgb(18, 149, 218);
             font-size: 14px;
           }
         }

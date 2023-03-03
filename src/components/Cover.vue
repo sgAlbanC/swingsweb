@@ -2,7 +2,7 @@
    <div class="cover" :style="{width:width+'px',height:width+'px'}">
 
     <el-image :style="{width:width+'px',height:width+'px'}" fit="cover" loading="lazy"
-        :src="cover ?proxy.globalInfo.imageUrl + cover :'/src/assets/menpiano.jpeg'">
+        :src="cover ?proxy.globalInfo.imageUrl + cover :''" v-if="cover">
     </el-image>
    </div>
 </template>

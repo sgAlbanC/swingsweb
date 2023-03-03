@@ -8,9 +8,11 @@
         :http-request="uploadImage"
       >
         <div class="cover-upload-btn">
+          <!-- 这个是本地图片 -->
           <template v-if="localFile">
             <img :src="localFile" />
           </template>
+          <!-- 这个是网上的图片 -->
           <template v-else>
             <img
               :src="
@@ -19,6 +21,7 @@
               "
               v-if="modelValue && modelValue.imageUrl"
             />
+            <!-- 这是图片没有东西的时候，显示那个 大图片 加号 -->
             <span class="iconfont icon-add" v-else></span>
           </template>
         </div>

@@ -24,6 +24,13 @@
                         <span class="post-time">{{ articleInfo.postTime }}</span> ·
                         <span class="address">{{ articleInfo.userIpAddress }}</span>
                         <span class="iconfont icon-eye-solid">&nbsp;{{ articleInfo.readCount }}</span>
+                        <router-link
+                            v-if="articleInfo.userId == currentUserInfo.userId"
+                            :to="`/editPost/${articleInfo.articleId}`"
+                            class="a-link btn-edit"
+                        >
+                            <span class="iconfont icon-edit">&nbsp;编辑</span>
+                        </router-link>
                     </div>
 
                 </div>
@@ -56,6 +63,7 @@
                ></CommentList>
             </div>
         </div>
+        <!-- 快捷键 -->
         <div class="quick-panel" :style="{left:quickPanelLeft + 'px'}">
 
             <!-- 点赞 -->
@@ -87,7 +95,9 @@
         </div>
 
         <div class="aside">
-            侧边栏
+            <div class="aside-panel">
+                侧边栏
+            </div>
         </div>
    </div>
 </template>
@@ -333,6 +343,13 @@ const highlightCode=()=>{
                         padding-left: 20px;
                         color: #9f9f9f;
                     }
+                    .btn-edit {
+                        .iconfont {
+                            font-size: 14px;
+                            color:rgb(18, 149, 218);
+                        }
+                        
+                    }
                 }
 
 
@@ -415,16 +432,19 @@ const highlightCode=()=>{
                 color: #f56c6c !important;
             }
         }
-
-
     }
 
     .aside{
         position: absolute;
         top: 27px;
-        right: 200px;
-        background-color: #fff;
-        padding: 15px;
+        right: 60px;
+        width: 200px;
+        .aside-panel{
+            position: fixed;
+            background-color: #fff;
+            width: 200px;
+            padding: 15px;
+        }
     }
 }
 </style>

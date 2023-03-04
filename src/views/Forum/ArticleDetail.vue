@@ -16,7 +16,11 @@
             <div class="detail-container" >
 
                 <!-- 作者信息渲染 -->
-                <div class="detail-title">{{articleInfo.title}}</div>
+                <div class="detail-title">
+                    {{articleInfo.title}}
+                    <el-tag v-if="articleInfo.status==0" type="danger">待审核</el-tag>
+                </div>
+                
                 <div class="user-info">
                     <Avatar class="avatar" :width="50" :userId="articleInfo.userId"></Avatar>
                     <div class="user-info-right">
@@ -96,7 +100,21 @@
 
         <div class="aside">
             <div class="aside-panel">
-                侧边栏
+                <div class="aside-title">目录</div>
+                <div class="aside-list">
+                    <template v-if="tocArray.length==0">
+                        <div class="no-toc">未解析到目录</div>
+                    </template>
+                    <template v-else>
+                        <div v-for="toc in tocArray">
+                            <span class="toc-title"
+                                @click="gotoAnchor(toc.id)"
+                                :class="[toc.id==anchorId?'active':'']"
+                                :style="{'padding-left':toc.level*15 + 'px'}"
+                            >{{ toc.title }}</span>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div>
    </div>
@@ -105,7 +123,7 @@
 <script setup>
 import hljs from "highlight.js";
 import "highlight.js/styles/atom-one-light.css"; //样式
-import { getCurrentInstance ,onMounted,ref ,watch,nextTick} from 'vue';
+import { getCurrentInstance ,onMounted,ref ,watch,nextTick, onUnmounted} from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex'
@@ -163,8 +181,13 @@ const getArticleDetatil = async (articleId) =>{
     articleInfo.value = result.data.forumArticle;
     haveLike.value = result.data.haveLike
 
+    // 图片预览
     imagePreview();
+    // 代码高亮
     highlightCode();
+    // 生成目录
+    makeToc();
+
     // 更新一下导航active情况，（如果从主页面直接点击文章进来，需要重新渲染导航）
     store.commit("setActivePboardId", result.data.forumArticle.pBoardId);
     store.commit("setActiveBoardId", result.data.forumArticle.boardId);
@@ -175,7 +198,9 @@ onMounted(()=>{
 
 // 往下滚到指定位置
 const goToPosition = (domId) =>{
-    document.querySelector('#' + domId).scrollIntoView();
+    document.querySelector('#' + domId).scrollIntoView({
+        behavior:'smooth'
+    });
 }
 
 // 点赞
@@ -289,6 +314,79 @@ const highlightCode=()=>{
         });
     })
 }
+
+
+// 侧边栏 获取目录
+const tocArray = ref([])
+const makeToc = () =>{
+    nextTick(()=>{
+        const tocTags = ['H1','H2','H3','H4','H5','H6']
+        // 获取所有H表标签
+        const contentDom = document.querySelector('#detail');
+        const childNodes = contentDom.childNodes;
+        let index = 0
+        childNodes.forEach((item)=>{
+            let tagName = item.tagName
+            if(tagName==undefined||!tocTags.includes(tagName.toUpperCase())){
+                return true;
+            }
+            index++;
+            let id = 'toc' + index
+            item.setAttribute('id',id)
+            tocArray.value.push({
+                id: id,
+                title: item.innerText,
+                level: Number.parseInt(tagName.substring(1)),
+                offsetTop: item.offsetTop,
+            })
+        })
+    })
+}
+
+// 点击跳转到对应的层级
+const anchorId = ref(null)
+const gotoAnchor=(domId) =>{
+    const dom = document.querySelector('#'+domId);
+    dom.scrollIntoView({
+        behavior:'smooth',
+        block:'start'
+    })
+}
+
+const listenerScroll=()=>{
+    let currentScrollTop = getScrollTop();
+    tocArray.value.some((item,index)=>{
+        if(
+            (index<tocArray.value.length-1&&
+            currentScrollTop>=tocArray.value[index].offsetTop&&
+            currentScrollTop<tocArray.value[index+1].offsetTop)||
+            (index==tocArray.value.length-1&&
+            currentScrollTop<tocArray.value[index].offsetTop)
+        ){
+            if(currentScrollTop<tocArray.value[index].offsetTop){
+                anchorId.value = null
+                return true;
+            }else{
+                anchorId.value = item.id
+                return true;
+            }
+        }
+    })
+}
+const getScrollTop = () =>{
+    let scrollTop = 
+        document.documentElement.scrollTop||
+        window.pageYOffset||
+        document.body.scrollTop;
+    return scrollTop;
+}
+
+onMounted(()=>{
+    window.addEventListener('scroll',listenerScroll,false)
+})
+onUnmounted(()=>{
+    window.removeEventListener('scroll',listenerScroll,false)
+})
 
 
 </script>
@@ -444,6 +542,36 @@ const highlightCode=()=>{
             background-color: #fff;
             width: 200px;
             padding: 15px;
+            // min-height: 200px;
+            max-height: 500px;
+            overflow: auto;
+            .aside-title{
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+            .aside-list{
+                .toc-title{
+                    display: block;
+                    line-height: 30px;
+                    cursor: pointer;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    border-radius: 3px;
+                    font-size: 14px;
+                    border-left: 2px solid #fff;
+                    color: #555666;
+                    padding: 5px;
+                }
+                .toc-title:hover{
+                    background-color: #e0e0e0;
+                }
+                .active{
+                    border-left: 2px solid #6ca1f7;
+                    border-radius: 0 3px 3px 3px;
+                    background-color: #e0e0e0;
+                }
+            }
         }
     }
 }

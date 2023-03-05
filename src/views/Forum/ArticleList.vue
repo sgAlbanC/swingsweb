@@ -149,7 +149,7 @@ watch(
     }
     .article-panel{
         
-        padding: 5px 0;
+        padding: 5px;
         background-color: #fff;
     }
     .top-tab{

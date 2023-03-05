@@ -3,6 +3,7 @@
      :model-value="show"
      :title="title"
      :width="width"
+     :top="top"
      :close-on-click-modal="false"
      draggable
      lock-scroll
@@ -38,6 +39,10 @@
       type:String,
       default:"400px"
    },
+   top:{
+      type:String,
+      default:"120px"
+   },
    showfooter:{
       type:Boolean,
       default:true
@@ -62,7 +67,6 @@
  <style scoped lang="less">
 .dialog-body{
    min-height: 20px;
-   max-height: 600px;
    // overflow: scroll;
    // &::-webkit-scrollbar {display:none}
 }

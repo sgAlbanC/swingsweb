@@ -52,8 +52,7 @@ const handlePageNoChange = (pageNo)=>{
 
 <style scoped lang="less">
 .pagination{
-  margin-left: 15px;
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 .skeleton{
   padding: 15px;

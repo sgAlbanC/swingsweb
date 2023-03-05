@@ -24,7 +24,7 @@
                 <div class="user-info">
                     <Avatar class="avatar" :width="50" :userId="articleInfo.userId"></Avatar>
                     <div class="user-info-right">
-                        <div class="user-name">{{articleInfo.nickName}}</div>
+                        <div class="user-name" @click="gotoUcenter(articleInfo.userId)">{{articleInfo.nickName}}</div>
                         <span class="post-time">{{ articleInfo.postTime }}</span> ·
                         <span class="address">{{ articleInfo.userIpAddress }}</span>
                         <span class="iconfont icon-eye-solid">&nbsp;{{ articleInfo.readCount }}</span>
@@ -103,7 +103,7 @@
                 <div class="aside-title">目录</div>
                 <div class="aside-list">
                     <template v-if="tocArray.length==0">
-                        <div class="no-toc">未解析到目录</div>
+                        <div class="no-toc">无目录</div>
                     </template>
                     <template v-else>
                         <div v-for="toc in tocArray">
@@ -151,6 +151,12 @@ const articleInfo = ref({});
 const attachment = ref({});
 // 是否已点赞
 const haveLike = ref(false);
+
+
+// 点击名字跳转到个人中心
+const gotoUcenter= (userId) =>{
+    router.push(`/user/${userId}`)
+}
 
 
 //监听登录用户

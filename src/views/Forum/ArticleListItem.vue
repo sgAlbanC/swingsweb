@@ -17,7 +17,8 @@
             </div>
             <span class="topType" v-if="data.topType==1">置顶</span>
             <router-link :to="`/post/${data.articleId}`" class="article-title">
-               {{ data.title }}
+               <!-- <span v-if="htmlTitle" v-html="data.title"></span> -->
+               <span>{{ data.title }}</span>
             </router-link>
             <div class="article-summary">{{ data.summary }}</div>
             <div class="article-info">
@@ -30,6 +31,7 @@
                <span class="iconfont icon-comment">
                   {{ data.commentCount==0?"评论":data.commentCount }}
                </span>
+               <span class="iconfont icon-edit" v-if="showEdit" @click="editArticle(data.articleId)">&nbsp;编辑</span>
             </div>
          </div>
          <router-link :to="`/post/${data.articleId}`" >
@@ -44,16 +46,29 @@
 
 <script setup>
 import {ref,reactive,watch} from 'vue'
+import { useRouter } from 'vue-router';
 
+const router = useRouter()
 
 const props = defineProps({
    data:{
       type:Object
-   }
+   },
+   showEdit:{
+      type:Boolean
+   },
+   htmlTitle: {
+    type: Boolean,
+    default: false,
+  },
 })
+const editArticle = (articleId) =>{
+   router.push(`/editPost/${articleId}`)
+}
+
 </script>
 
-<style scoped lang="less">
+<style lang="less">
 .article-item{
    .article-item-inner{
       margin: 15px;

@@ -50,7 +50,7 @@ const handlePageNoChange = (pageNo)=>{
 
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped >
 .pagination{
   margin: 10px 0;
 }

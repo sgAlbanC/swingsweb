@@ -33,7 +33,7 @@
                 </el-form-item>
                 <div class="checkcode-panel">
                     <el-form-item label="验证码" prop="checkCode">
-                        <el-input maxlength="5" v-model="formLogin.checkCode">
+                        <el-input maxlength="5" v-model="formLogin.checkCode" @keyup.enter="login">
                             <template #prefix>
                                 <span class="iconfont icon-checkcode"></span>
                             </template>

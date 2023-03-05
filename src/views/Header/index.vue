@@ -28,7 +28,7 @@
                 发帖 
                 <span class="iconfont icon-add"></span>
             </el-button>
-            <el-button type="primary">
+            <el-button type="primary" @click="goSearch">
                 搜索
                 <span class="iconfont icon-search "></span>
             </el-button>
@@ -107,7 +107,8 @@ const api = {
     getUserInfo:'/getUserInfo/',
     loadBoard:'/board/loadBoard/',
     logout: "/logout",
-    getMessageCount:'/ucenter/getMessageCount'
+    getMessageCount:'/ucenter/getMessageCount',
+    getSysSetting:'/getSysSetting'
 
 }
 
@@ -120,6 +121,7 @@ const loginAndRegister = (type)=>{
 onMounted(()=>{
     getUserInfo();
     loadBoard();
+    loadSysSetting();
 })
 
 // 获取板块信息
@@ -261,6 +263,25 @@ watch(
         }
     }
 )
+
+
+// 获取系统配置 是否关闭评论
+const loadSysSetting = async()=>{
+    let result = await proxy.Request({
+        url:api.getSysSetting
+    })
+    if(!result){
+        return;
+    }
+    store.commit('saveSysSetting',result.data);
+}
+
+
+// 搜索,简单跳个路由
+const goSearch = () =>{
+    router.push('/search')
+}
+
 
 
 // logo的设置

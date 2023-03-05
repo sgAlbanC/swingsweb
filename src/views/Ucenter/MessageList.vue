@@ -323,6 +323,6 @@
     }
   }
   .a-link{
-    color: rgb(18, 149, 218);
+    color:rgb(18, 149, 218);
   }
   </style>

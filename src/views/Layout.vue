@@ -8,6 +8,11 @@
    <div class="footer">
         <Footer></Footer>
    </div>
+
+   <!-- 回到顶部 那个按钮 -->
+
+   <el-backtop :right="100" :botton="100"></el-backtop>
+
 </template>
 
 <script setup>
@@ -34,13 +39,11 @@ const initScroll = ()=>{
     //     }
     //     initScrollTop = currentScrollTop
     // })
-    
 }
 onMounted(
     ()=>{
         initScroll()
     }
-
 )
 
 </script>

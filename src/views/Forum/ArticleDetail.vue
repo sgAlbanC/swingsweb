@@ -58,7 +58,7 @@
             </div>
 
             <!-- 评论板块 -->
-            <div class="detail-comment" id="view-comment">
+            <div class="detail-comment" id="view-comment" v-if="showComment">
                <CommentList 
                     :articleId="articleInfo.articleId" 
                     :articleUserId="articleInfo.userId" 
@@ -80,7 +80,8 @@
             </el-badge>
 
             <!-- 评论 -->
-            <el-badge 
+            <el-badge
+                v-if="showComment"
                 :value="articleInfo.commentCount"
                 type="info"
                 :hidden="!articleInfo.commentCount>0"
@@ -393,6 +394,15 @@ onMounted(()=>{
 onUnmounted(()=>{
     window.removeEventListener('scroll',listenerScroll,false)
 })
+
+
+
+const showComment = ref(false);
+watch(()=>store.state.sysSetting,
+(newVal,oldVal)=>{
+    showComment.value = newVal.commentOpen
+},{immediate:true,deep:true})
+
 
 
 </script>

@@ -1,5 +1,5 @@
 import { createRouter,createWebHistory } from "vue-router";
-
+import store from '@/store'
 const router = createRouter({
 
     history:createWebHistory(import.meta.env.BASE_URL),
@@ -40,13 +40,29 @@ const router = createRouter({
                 path:'/user/message/:type',
                 name:'消息',
                 component:()=>import('@/views/Ucenter/MessageList.vue')
+            },{
+                path: '/search',
+                name: '搜索',
+                component: () => import('@/views/Search.vue'),
             }
         
-        ]}
+        ]},
+        {
+            path:'/:pathMatch(.*)*',
+            name:'错误页面',
+            component:()=> import("@/views/Error404.vue")
+        }
 
 
     ]
 
+})
+
+router.beforeEach((to,from,next)=>{
+    if(to.path.indexOf('/user')!=-1){
+        store.commit('setActivePboardId',-1)
+    }
+    next();
 })
 
 export default router

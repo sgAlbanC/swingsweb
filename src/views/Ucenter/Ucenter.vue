@@ -60,7 +60,11 @@
             <div class="article-list">
                <DataList :dataSource="articleListInfo" :loading="loading" @loadData="loadUserArticle">
                   <template #default="{ data }">
-                     <ArticleListItem :data="data"></ArticleListItem>
+                     <ArticleListItem 
+                        :data="data" 
+                        :showEdit="activeTabName==0&&userId==currentUserInfo.userId"
+                     >
+                     </ArticleListItem>
                   </template>
                </DataList>
             </div>

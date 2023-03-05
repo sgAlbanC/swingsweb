@@ -36,16 +36,34 @@
             <template v-if="userInfo.userId">
                 <div class="message-info">
                     <el-dropdown>
-                        <el-badge :value="99" class="item">
+                        <el-badge 
+                            :value="messageCountInfo.total" class="item" 
+                            :hidden="messageCountInfo.total==null||messageCountInfo.total==0"
+                        >
                             <div class="iconfont icon-message"></div>
                         </el-badge>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item>回复我的</el-dropdown-item>
-                                <el-dropdown-item>赞了我的文章</el-dropdown-item>
-                                <el-dropdown-item>下载了我的附件</el-dropdown-item>
-                                <el-dropdown-item>赞了我的评论</el-dropdown-item>
-                                <el-dropdown-item>系统消息</el-dropdown-item>
+                                <el-dropdown-item @click="gotoMessage('reply')">
+                                    回复我的 &nbsp;
+                                    <span :class="messageCountInfo.reply>0?'count-tag':'hide-tag'">{{ messageCountInfo.reply }}</span>
+                                </el-dropdown-item>
+                                <el-dropdown-item @click="gotoMessage('likePost')">
+                                    赞了我的文章 &nbsp;
+                                    <span :class="messageCountInfo.likePost>0?'count-tag':'hide-tag'">{{ messageCountInfo.likePost }}</span>
+                                </el-dropdown-item>
+                                <el-dropdown-item @click="gotoMessage('downloadAttachment')">
+                                    下载了我的附件 &nbsp;
+                                    <span :class="messageCountInfo.downloadAttachment>0?'count-tag':'hide-tag'">{{ messageCountInfo.downloadAttachment }}</span>
+                                </el-dropdown-item>
+                                <el-dropdown-item @click="gotoMessage('likeComment')">
+                                    赞了我的评论 &nbsp;
+                                    <span :class="messageCountInfo.likeComment>0?'count-tag':'hide-tag'">{{ messageCountInfo.likeComment }}</span>
+                                </el-dropdown-item>
+                                <el-dropdown-item @click="gotoMessage('sys')">
+                                    系统消息 &nbsp;
+                                    <span :class="messageCountInfo.sys>0?'count-tag':'hide-tag'">{{ messageCountInfo.sys }}</span>
+                                </el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
@@ -55,7 +73,6 @@
                     <Avatar :userId="userInfo.userId"></Avatar>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item>我的主页</el-dropdown-item>
                                 <el-dropdown-item @click="logout">退出</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
@@ -90,6 +107,7 @@ const api = {
     getUserInfo:'/getUserInfo/',
     loadBoard:'/board/loadBoard/',
     logout: "/logout",
+    getMessageCount:'/ucenter/getMessageCount'
 
 }
 
@@ -130,18 +148,19 @@ const newPost = () =>{
 
 
 
-
 //退出
-const logout = async () => {
-    let result = await proxy.Request({
-      url: api.logout,
-    });
-    if (!result) {
-      return;
-    }
-    store.commit("updateLoginUserInfo", null);
-};
+const logout =  () => {
+    proxy.Confirm("确定要退出吗？",async ()=>{
+        let result = await proxy.Request({
+            url: api.logout,
+        });
+        if (!result) {
+        return;
+        }
+        store.commit("updateLoginUserInfo", null);
+    })
 
+};
 
 
 // 获取用户信息
@@ -213,6 +232,36 @@ watch(()=>store.state.activeBoardId,
     },
     {immediate:true,deep:true}
 )
+
+
+// 消息相关
+const gotoMessage = (type)=>{
+    router.push(`/user/message/${type}`);
+}
+
+
+const messageCountInfo = ref({})
+const loadMessageCount = async()=>{
+    let result = await proxy.Request({
+        url:api.getMessageCount     // 这个接口 后端需要要求登录
+    })
+    if(!result){
+        return;
+    }
+    messageCountInfo.value = result.data
+    store.commit("updateMessageCountInfo", result.data);
+}
+
+// 监听登录信息，当登录过后才调用loadMessageCount
+watch(
+    ()=> store.state.loginUserInfo,
+    (newVal,oldVal)=>{
+        if(newVal){
+            loadMessageCount()
+        }
+    }
+)
+
 
 // logo的设置
 const logoInfo = ref([
@@ -319,5 +368,20 @@ const logoInfo = ref([
         color: #fff;
     }
     
+}
+.count-tag{
+    display: flex;
+    font-size: 13px;
+    background-color: #f56c6c;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    height: 18px;
+    width: 18px;
+    text-align: center;
+    border-radius: 100%;
+}
+.hide-tag{
+    display: none;
 }
 </style>

@@ -6,12 +6,13 @@
         <router-view />
    </div>
    <div class="footer">
+        <Footer></Footer>
    </div>
-
 </template>
 
 <script setup>
 import Header from '@/views/Header/index.vue'
+import Footer from '@/views/Footer/index.vue'
 import { onMounted, ref } from 'vue'
 
 let showHeader =ref(true)
@@ -44,7 +45,7 @@ onMounted(
 
 </script>
 
-<style scoped lang="less">
+<style lang="less">
 .header{
     width: 100%;
     box-shadow: 0 2px 6px 0 #ddd;
@@ -55,5 +56,14 @@ onMounted(
 .main{
     // position: relative;
     padding-top: 60px;
+    min-height: calc(~"100vh - 180px");
+    
 }
+.footer{
+    background-color: #fff;
+    padding: 20px;
+    height: 40px;
+    margin-top:40px;
+}
+
 </style>

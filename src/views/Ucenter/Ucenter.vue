@@ -191,7 +191,7 @@ const checkIntegral=()=>{
    margin: 0 auto;
    .user-banner{
       margin: 20px 0 10px 0;
-      color: #7e8c8d;
+      // color: #7e8c8d;
       .a-link{
          color: rgb(18, 149, 218);
       }

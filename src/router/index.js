@@ -36,6 +36,10 @@ const router = createRouter({
                 path:'/editPost/:articleId',
                 name:'编辑文章',
                 component:()=>import('@/views/Forum/EditPost.vue')
+            },{
+                path:'/user/message/:type',
+                name:'消息',
+                component:()=>import('@/views/Ucenter/MessageList.vue')
             }
         
         ]}

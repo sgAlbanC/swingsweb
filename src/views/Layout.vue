@@ -15,6 +15,7 @@
 
 </template>
 
+
 <script setup>
 import Header from '@/views/Header/index.vue'
 import Footer from '@/views/Footer/index.vue'
@@ -63,9 +64,8 @@ onMounted(
     
 }
 .footer{
+    width: 100%;
     background-color: #fff;
-    padding: 20px;
-    height: 40px;
     margin-top:40px;
 }
 

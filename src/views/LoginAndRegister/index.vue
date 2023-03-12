@@ -22,7 +22,7 @@
                     </el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input placeholder="aaaaaaa1" maxlength="20" v-model="formLogin.password" :type="passwordEyeType.passwordEye?'text':'password'">
+                    <el-input placeholder="" maxlength="20" v-model="formLogin.password" :type="passwordEyeType.passwordEye?'text':'password'">
                         <template #prefix>
                             <span class="iconfont icon-password"></span>
                         </template>
@@ -69,7 +69,7 @@
                 :rules="rules"
             >
                 <el-form-item maxlength="30" label="邮箱" prop="email">
-                    <el-input v-model="formRegister.email" placeholder="390200763@qq.com">
+                    <el-input v-model="formRegister.email" placeholder="">
                         <template #prefix>
                             <span class="iconfont icon-account"></span>
                         </template>

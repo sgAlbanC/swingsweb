@@ -19,6 +19,8 @@
 
 <style scoped lang="less">
 .footer-panel{
+    background-color: #fff;
+    padding: 20px;
     height: 40px;
     margin: 0 auto;
     display: flex;

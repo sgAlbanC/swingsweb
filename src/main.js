@@ -29,8 +29,9 @@ import Request from './utils/Request'
 import Utils from './utils/Utils'
 import Confirm from './utils/Confirm'
 
-const app = createApp(App)
+const app = createApp(App) // 创建应用实例
 
+// 注册全局组件（将组件挂载到全局）
 app.component("Dialog",Dialog)
 app.component("Avatar",Avatar)
 app.component("Cover",Cover)
@@ -45,6 +46,9 @@ app.component("AttachmentSelector",AttachmentSelector)
 app.use(store)
 app.use(router)
 app.use(ElementPlus)
+
+// 应用实例会暴露一个.config对象允许我们配置一些应用级的选项
+// 这里是将一些方法当作全局属性，将方法变成全局的
 app.config.globalProperties.VueCookies = VueCookies
 app.config.globalProperties.globalInfo = {
     bodywidth:1280,
@@ -57,4 +61,4 @@ app.config.globalProperties.Request = Request
 app.config.globalProperties.Utils = Utils
 app.config.globalProperties.Confirm = Confirm
 
-app.mount('#app')
+app.mount('#app') // 挂载应用实例到 id='app'上
